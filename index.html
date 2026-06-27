@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Les bons contacts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="css/legal.css">
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <header class="header">
+      <a href="index.html" class="logo">
+        <span class="logo__icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="12" fill="#E8341A"/>
+            <path d="M7 16V8h2.2l2.3 4.5L14 8h2v8h-1.8v-4.8L12.2 16h-1.4L9 11.2V16H7z" fill="white"/>
+          </svg>
+        </span>
+        <span class="logo__name">Les bons contacts</span>
+      </a>
+
+      <nav class="nav">
+        <a href="ebook.html" class="nav__link">Ebook</a>
+        <a href="connexion.html" class="nav__link">Connexion</a>
+        <a href="inscription.html" class="nav__link">Inscription</a>
+      </nav>
+    </header>
+
+    <!-- Hero texte (modifiable) -->
+    <main class="hero">
+      <div class="hero__text">
+        <h1 class="hero__title">
+          Trouvez vos fournisseurs
+          <span class="hero__tag">49 399 contacts</span>
+        </h1>
+        <p class="hero__subtitle">
+          17 annuaires pros par secteur — cosmétiques, alimentaire, packaging et plus.
+          Des milliers de contacts prêts à l'emploi, à moins de 20&nbsp;€.
+        </p>
+        <a href="ebook.html" class="hero__cta">Découvrir les ebooks</a>
+      </div>
+    </main>
+
+    <!-- Indicateur de section (gauche) -->
+    <aside class="section-indicator" aria-label="Sections">
+      <span class="section-indicator__dot section-indicator__dot--active"></span>
+      <span class="section-indicator__dot"></span>
+      <span class="section-indicator__dot"></span>
+      <span class="section-indicator__dot"></span>
+      <span class="section-indicator__dot"></span>
+      <span class="section-indicator__dot"></span>
+    </aside>
+
+    <!-- Cercle scroll (centre bas) -->
+    <div class="scroll-ring" aria-hidden="true"></div>
+
+    <!-- Bouton scroll (bas droite) -->
+    <button class="scroll-btn" type="button" aria-label="Défiler vers le bas">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="js/user.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/cart-ui.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

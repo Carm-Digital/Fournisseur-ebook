@@ -1,0 +1,12 @@
+.env
+.env.local
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Archive source (too large for GitHub)
+assets/ebooks/files.zip
+assets/ebooks/extracted/sample/
+# > 100 Mo — limite GitHub (conserver en local pour le serveur)
+assets/ebooks/extracted/Annuaire_Matiere_Premiere_Images.zip

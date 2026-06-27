@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panier — Les bons contacts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="css/legal.css">
+</head>
+<body class="page-ebooks">
+  <div class="page page--scroll">
+    <header class="header">
+      <a href="index.html" class="logo">
+        <span class="logo__icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="12" fill="#E8341A"/>
+            <path d="M7 16V8h2.2l2.3 4.5L14 8h2v8h-1.8v-4.8L12.2 16h-1.4L9 11.2V16H7z" fill="white"/>
+          </svg>
+        </span>
+        <span class="logo__name">Les bons contacts</span>
+      </a>
+
+      <nav class="nav">
+        <a href="ebook.html" class="nav__link">Ebook</a>
+        <a href="connexion.html" class="nav__link">Connexion</a>
+        <a href="inscription.html" class="nav__link">Inscription</a>
+      </nav>
+    </header>
+
+    <main class="cart-page">
+      <h1 class="cart-page__title">Mon panier</h1>
+      <p class="cart-page__subtitle">Vérifiez vos ebooks avant de passer commande.</p>
+
+      <div class="cart-list" id="cart-list"></div>
+
+      <div class="cart-empty" id="cart-empty" hidden>
+        <p>Votre panier est vide.</p>
+        <a href="ebook.html">Parcourir les ebooks</a>
+      </div>
+
+      <div class="cart-summary" id="cart-summary" hidden>
+        <div class="cart-summary__row">
+          <span>Sous-total</span>
+          <span id="cart-subtotal">0,00 €</span>
+        </div>
+        <div class="cart-summary__row cart-summary__row--total">
+          <span>Total</span>
+          <span id="cart-total">0,00 €</span>
+        </div>
+        <button type="button" class="cart-summary__btn" id="cart-checkout">Payer avec Stripe</button>
+        <p class="cart-summary__note">Paiement sécurisé par Stripe. Inscription requise.</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="pay-modal" id="checkout-modal" hidden>
+    <div class="pay-modal__backdrop"></div>
+    <div class="pay-modal__box">
+      <h2 class="pay-modal__title">Confirmer la commande</h2>
+      <p class="pay-modal__text">
+        Vous serez redirigé vers <strong>Stripe</strong> pour payer en toute sécurité.<br>
+        <strong data-checkout-count></strong> ebook(s) — Total : <strong data-checkout-total></strong>
+      </p>
+      <div class="pay-modal__actions">
+        <button type="button" class="pay-modal__btn pay-modal__btn--cancel" data-checkout-cancel>Annuler</button>
+        <button type="button" class="pay-modal__btn pay-modal__btn--confirm" id="checkout-confirm" data-checkout-confirm>Payer avec Stripe</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/user.js"></script>
+  <script src="js/ebooks-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/stripe-checkout.js"></script>
+  <script src="js/cart-page.js"></script>
+  <script src="js/cart-ui.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paiement — Les bons contacts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/legal.css">
+</head>
+<body class="page-auth">
+  <div class="page">
+    <header class="header">
+      <a href="index.html" class="logo">
+        <span class="logo__icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="12" fill="#E8341A"/>
+            <path d="M7 16V8h2.2l2.3 4.5L14 8h2v8h-1.8v-4.8L12.2 16h-1.4L9 11.2V16H7z" fill="white"/>
+          </svg>
+        </span>
+        <span class="logo__name">Les bons contacts</span>
+      </a>
+    </header>
+
+    <main class="auth">
+      <div class="auth__card">
+        <h1 class="auth__title">Paiement Stripe</h1>
+        <p class="auth__subtitle" id="success-status">Vérification du paiement en cours…</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/user.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/stripe-checkout.js"></script>
+  <script src="js/success-page.js"></script>
+</body>
+</html>

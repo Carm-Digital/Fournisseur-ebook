@@ -1,0 +1,353 @@
+body.page-ebooks {
+  overflow: auto;
+}
+
+.page--scroll {
+  min-height: 100vh;
+  height: auto;
+  overflow: visible;
+}
+
+.ebooks {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 48px 80px;
+}
+
+.ebooks__header {
+  margin-bottom: 48px;
+}
+
+.ebooks__title {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.ebooks__subtitle {
+  margin-top: 12px;
+  font-size: 16px;
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+}
+
+.ebooks__total {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent-yellow);
+  letter-spacing: -0.01em;
+}
+
+.ebooks__notice {
+  margin-top: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #8f8;
+  background: rgba(40, 120, 60, 0.15);
+  border: 1px solid rgba(40, 120, 60, 0.3);
+  border-radius: 8px;
+}
+
+.ebooks__user {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ebooks__user-text {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.ebooks__user-link {
+  color: var(--text);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ebooks__logout {
+  padding: 8px 14px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.ebooks__logout:hover {
+  color: var(--text);
+  border-color: #555;
+}
+
+.ebooks__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 32px;
+}
+
+.ebook-card {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid #222;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.ebook-card:hover {
+  transform: translateY(-4px);
+  border-color: #333;
+}
+
+.ebook-card__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ebook-card__cover {
+  position: relative;
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.ebook-card__img--blur {
+  filter: blur(14px);
+  transform: scale(1.08);
+}
+
+.ebook-card__lock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+}
+
+.ebook-card__lock svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.9;
+}
+
+.ebook-card__price {
+  padding: 6px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: var(--accent-red);
+  border-radius: 999px;
+}
+
+.ebook-card__suppliers {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+
+.ebook-card__count {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-yellow);
+  letter-spacing: -0.01em;
+}
+
+.ebook-card__desc--blur {
+  filter: blur(4px);
+  user-select: none;
+  pointer-events: none;
+}
+
+.ebook-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ebook-card__body {
+  padding: 20px;
+}
+
+.ebook-card__title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.ebook-card__desc {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.ebook-card__cta {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-red);
+}
+
+.ebook-card__btn {
+  display: inline-block;
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: var(--accent-red);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.ebook-card__btn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.ebook-card__btn--download {
+  background: #1a5c2e;
+}
+
+.ebook-card--free .ebook-card__price {
+  background: #1a5c2e;
+}
+
+.ebook-card--locked:hover {
+  transform: translateY(-4px);
+  border-color: #333;
+}
+
+.ebook-card--unlocked .ebook-card__cover img {
+  filter: none;
+}
+
+.pay-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.pay-modal[hidden] {
+  display: none;
+}
+
+.pay-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.pay-modal__box {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 16px;
+}
+
+.pay-modal__title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pay-modal__text {
+  margin-top: 12px;
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pay-modal__price {
+  margin-top: 20px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pay-modal__actions {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+}
+
+.pay-modal__btn {
+  flex: 1;
+  padding: 14px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.pay-modal__btn--confirm {
+  color: #fff;
+  background: var(--accent-red);
+}
+
+.pay-modal__btn--cancel {
+  color: var(--text-muted);
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+
+.ebooks__empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--text-muted);
+  font-size: 16px;
+  border: 1px dashed #333;
+  border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+  .ebooks {
+    padding: 32px 24px 64px;
+  }
+
+  .ebooks__grid {
+    gap: 24px;
+  }
+}

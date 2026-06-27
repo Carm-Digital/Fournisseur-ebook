@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ebooks — Les bons contacts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/ebooks.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="css/legal.css">
+</head>
+<body class="page-ebooks">
+  <div class="page page--scroll">
+    <header class="header">
+      <a href="index.html" class="logo">
+        <span class="logo__icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="12" fill="#E8341A"/>
+            <path d="M7 16V8h2.2l2.3 4.5L14 8h2v8h-1.8v-4.8L12.2 16h-1.4L9 11.2V16H7z" fill="white"/>
+          </svg>
+        </span>
+        <span class="logo__name">Les bons contacts</span>
+      </a>
+
+      <nav class="nav">
+        <a href="ebook.html" class="nav__link nav__link--active">Ebook</a>
+        <a href="connexion.html" class="nav__link">Connexion</a>
+        <a href="inscription.html" class="nav__link">Inscription</a>
+      </nav>
+    </header>
+
+    <main class="ebooks">
+      <div class="ebooks__header">
+        <h1 class="ebooks__title">Nos ebooks</h1>
+        <p class="ebooks__subtitle">Inscrivez-vous pour acheter et débloquer le téléchargement.</p>
+        <p class="ebooks__total" id="ebooks-total"></p>
+        <p class="ebooks__notice" id="ebooks-notice" hidden></p>
+        <div class="ebooks__user" id="ebooks-user"></div>
+      </div>
+
+      <div class="ebooks__grid" id="ebooks-grid"></div>
+
+      <p class="ebooks__empty" id="ebooks-empty" hidden>
+        Aucun ebook pour le moment. Revenez bientôt !
+      </p>
+    </main>
+  </div>
+
+  <script src="js/user.js"></script>
+  <script src="js/ebooks-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/ebooks-page.js"></script>
+  <script src="js/cart-ui.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
