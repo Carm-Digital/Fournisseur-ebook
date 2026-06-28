@@ -7,6 +7,8 @@ const checkoutBtn = document.getElementById("cart-checkout");
 const checkoutModal = document.getElementById("checkout-modal");
 const checkoutConfirmBtn = document.getElementById("checkout-confirm");
 
+const LOCKED_PREVIEW_SRC = "assets/ebooks/placeholder.svg";
+
 function renderCart() {
   if (!cartList || typeof CartStore === "undefined") return;
 
@@ -28,8 +30,9 @@ function renderCart() {
     const row = document.createElement("div");
     row.className = "cart-item";
     row.innerHTML = `
-      <div class="cart-item__cover">
-        <img src="${ebook.cover}" alt="" loading="lazy">
+      <div class="cart-item__cover cart-item__cover--locked">
+        <img src="${LOCKED_PREVIEW_SRC}" alt="" loading="lazy" draggable="false" class="cart-item__img--locked">
+        <span class="cart-item__lock" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
       </div>
       <div class="cart-item__info">
         <h2 class="cart-item__title">${ebook.title}</h2>
@@ -95,7 +98,7 @@ checkoutConfirmBtn?.addEventListener("click", async () => {
   checkoutConfirmBtn.textContent = "Redirection Stripe…";
 
   try {
-    await startStripeCheckout(ebookIds, user.email);
+    await startStripeCheckout(ebookIds, user.email, UserStore.getUserId());
   } catch (error) {
     alert(error.message);
     checkoutConfirmBtn.disabled = false;
@@ -105,4 +108,4 @@ checkoutConfirmBtn?.addEventListener("click", async () => {
 });
 
 showCancelNotice();
-renderCart();
+UserStore.init().then(renderCart);

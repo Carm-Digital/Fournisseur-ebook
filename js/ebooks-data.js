@@ -104,7 +104,7 @@ const EBOOKS = [
     description: "Répertoire d'images — papeteries.",
     cover: "assets/ebooks/covers/papeteries.png",
     file: "assets/ebooks/extracted/Annuaire_Papeteries_Images.zip",
-    price: 19.9,
+    price: 0,
     suppliers: 5722,
   },
   {
@@ -131,7 +131,7 @@ const EBOOKS = [
     description: "Répertoire d'images — plantes.",
     cover: "assets/ebooks/covers/plantes.png",
     file: "assets/ebooks/extracted/Annuaire_Plantes_Images.zip",
-    price: 19.9,
+    price: 0,
     suppliers: 4507,
   },
   {

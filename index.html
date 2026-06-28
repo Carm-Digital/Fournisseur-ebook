@@ -3,75 +3,346 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Les bons contacts</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/cart.css">
-  <link rel="stylesheet" href="css/legal.css">
+  <title>Les bons contacts — Annuaires fournisseurs</title>
+  <meta name="description" content="17 annuaires professionnels de fournisseurs par secteur. Plus de 49 000 contacts prêts à l'emploi.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/landing.css">
 </head>
-<body>
-  <div class="page">
-    <!-- Header -->
-    <header class="header">
-      <a href="index.html" class="logo">
-        <span class="logo__icon">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="12" fill="#E8341A"/>
-            <path d="M7 16V8h2.2l2.3 4.5L14 8h2v8h-1.8v-4.8L12.2 16h-1.4L9 11.2V16H7z" fill="white"/>
-          </svg>
-        </span>
-        <span class="logo__name">Les bons contacts</span>
-      </a>
+<body class="page-site page-home" data-page="home">
 
-      <nav class="nav">
-        <a href="ebook.html" class="nav__link">Ebook</a>
-        <a href="connexion.html" class="nav__link">Connexion</a>
-        <a href="inscription.html" class="nav__link">Inscription</a>
-      </nav>
-    </header>
+  <main class="site-main">
 
-    <!-- Hero texte (modifiable) -->
-    <main class="hero">
-      <div class="hero__text">
-        <h1 class="hero__title">
-          Trouvez vos fournisseurs
-          <span class="hero__tag">49 399 contacts</span>
-        </h1>
-        <p class="hero__subtitle">
-          17 annuaires pros par secteur — cosmétiques, alimentaire, packaging et plus.
-          Des milliers de contacts prêts à l'emploi, à moins de 20&nbsp;€.
-        </p>
-        <a href="ebook.html" class="hero__cta">Découvrir les ebooks</a>
+  <!-- Hero -->
+  <header class="landing-hero" id="hero">
+    <div class="container">
+      <div class="landing-hero__grid">
+        <div>
+          <h1 class="landing-hero__title">Trouvez vos fournisseurs en quelques clics</h1>
+          <p class="landing-hero__lead">
+            17 annuaires pros par secteur — cosmétiques, alimentaire, packaging et plus.
+            Plus de 49&nbsp;000 contacts prêts à l'emploi, à moins de 20&nbsp;€.
+          </p>
+          <div class="landing-hero__actions">
+            <a href="ebook.html" class="btn-landing btn-landing--primary btn-landing--lg">Découvrir les ebooks</a>
+            <a href="#how-it-works" class="btn-landing btn-landing--outline btn-landing--lg">En savoir plus</a>
+          </div>
+        </div>
+        <div class="landing-hero__image-wrap">
+          <img src="assets/ebooks/covers/cosmetiques.png" alt="Aperçu annuaire fournisseurs" class="landing-hero__image">
+        </div>
       </div>
-    </main>
+    </div>
+    <div class="landing-hero__shape"></div>
+  </header>
 
-    <!-- Indicateur de section (gauche) -->
-    <aside class="section-indicator" aria-label="Sections">
-      <span class="section-indicator__dot section-indicator__dot--active"></span>
-      <span class="section-indicator__dot"></span>
-      <span class="section-indicator__dot"></span>
-      <span class="section-indicator__dot"></span>
-      <span class="section-indicator__dot"></span>
-      <span class="section-indicator__dot"></span>
-    </aside>
+  <!-- Stats -->
+  <section class="landing-stats" id="stats">
+    <div class="container">
+      <div class="landing-stats__grid">
+        <div class="landing-stat">
+          <h3 class="landing-stat__number">17</h3>
+          <p class="landing-stat__text">Annuaires par secteur</p>
+        </div>
+        <div class="landing-stat">
+          <h3 class="landing-stat__number">49 399+</h3>
+          <p class="landing-stat__text">Contacts professionnels</p>
+        </div>
+        <div class="landing-stat">
+          <h3 class="landing-stat__number">&lt; 20 €</h3>
+          <p class="landing-stat__text">Par annuaire</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Cercle scroll (centre bas) -->
-    <div class="scroll-ring" aria-hidden="true"></div>
+  <!-- How it works -->
+  <section id="how-it-works" class="landing-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Processus simple</span>
+        <h2 class="section-title">Comment ça marche</h2>
+        <p class="section-description">Accédez à des milliers de fournisseurs en trois étapes simples</p>
+      </div>
+      <div class="landing-process__grid">
+        <article class="process-card">
+          <div class="process-icon">
+            <span class="process-number">1</span>
+            <i class="bi bi-search"></i>
+          </div>
+          <h3>Choisissez votre secteur</h3>
+          <p>Parcourez 17 annuaires thématiques — cosmétiques, alimentaire, packaging, automobiles et bien plus.</p>
+          <ul class="process-features">
+            <li><i class="bi bi-check-circle-fill"></i> 17 catégories disponibles</li>
+            <li><i class="bi bi-check-circle-fill"></i> Descriptions détaillées</li>
+            <li><i class="bi bi-check-circle-fill"></i> Nombre de contacts affiché</li>
+          </ul>
+        </article>
+        <article class="process-card active">
+          <div class="process-icon">
+            <span class="process-number">2</span>
+            <i class="bi bi-cart-check"></i>
+          </div>
+          <h3>Achetez en ligne</h3>
+          <p>Créez un compte, ajoutez les annuaires à votre panier et payez en toute sécurité via Stripe.</p>
+          <ul class="process-features">
+            <li><i class="bi bi-check-circle-fill"></i> Paiement sécurisé Stripe</li>
+            <li><i class="bi bi-check-circle-fill"></i> Prix transparents</li>
+            <li><i class="bi bi-check-circle-fill"></i> Livres, Plantes et Papeteries offerts</li>
+          </ul>
+        </article>
+        <article class="process-card">
+          <div class="process-icon">
+            <span class="process-number">3</span>
+            <i class="bi bi-download"></i>
+          </div>
+          <h3>Téléchargez vos contacts</h3>
+          <p>Débloquez instantanément le téléchargement ZIP de votre annuaire, lié à votre compte.</p>
+          <ul class="process-features">
+            <li><i class="bi bi-check-circle-fill"></i> Accès immédiat</li>
+            <li><i class="bi bi-check-circle-fill"></i> Format ZIP prêt à l'emploi</li>
+            <li><i class="bi bi-check-circle-fill"></i> Contacts structurés</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
 
-    <!-- Bouton scroll (bas droite) -->
-    <button class="scroll-btn" type="button" aria-label="Défiler vers le bas">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-  </div>
+  <!-- Categories -->
+  <section class="landing-section landing-section--gray" id="categories">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Large choix</span>
+        <h2 class="section-title">Nos secteurs d'activité</h2>
+        <p class="section-description">Des annuaires spécialisés pour chaque filière de votre activité</p>
+      </div>
+      <div class="landing-categories__grid">
+        <a href="ebook.html" class="category-card">
+          <div class="category-card__icon"><i class="bi bi-droplet-fill"></i></div>
+          <h4>Cosmétiques</h4>
+        </a>
+        <a href="ebook.html" class="category-card">
+          <div class="category-card__icon"><i class="bi bi-basket-fill"></i></div>
+          <h4>Alimentaire</h4>
+        </a>
+        <a href="ebook.html" class="category-card">
+          <div class="category-card__icon"><i class="bi bi-box-seam-fill"></i></div>
+          <h4>Packaging</h4>
+        </a>
+        <a href="ebook.html" class="category-card">
+          <div class="category-card__icon"><i class="bi bi-car-front-fill"></i></div>
+          <h4>Automobiles</h4>
+        </a>
+        <a href="ebook.html" class="category-card">
+          <div class="category-card__icon"><i class="bi bi-flower1"></i></div>
+          <h4>Parfums</h4>
+        </a>
+        <a href="ebook.html" class="category-card">
+          <div class="category-card__icon"><i class="bi bi-book-fill"></i></div>
+          <h4>Livres</h4>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Catalogue -->
+  <section id="catalogue" class="landing-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Catalogue en ligne</span>
+        <h2 class="section-title">Accédez à vos fournisseurs</h2>
+        <p class="section-description">Inscrivez-vous, choisissez vos annuaires et téléchargez vos contacts en quelques minutes</p>
+      </div>
+      <div class="landing-catalog__grid">
+        <div class="catalog-steps">
+          <div class="catalog-step">
+            <span class="catalog-step__num">1</span>
+            <div>
+              <h4>Créez votre compte</h4>
+              <p>Inscription gratuite en quelques secondes pour gérer vos achats.</p>
+            </div>
+          </div>
+          <div class="catalog-step">
+            <span class="catalog-step__num">2</span>
+            <div>
+              <h4>Sélectionnez vos annuaires</h4>
+              <p>Ajoutez au panier les secteurs qui vous intéressent — à partir de 12,90&nbsp;€.</p>
+            </div>
+          </div>
+          <div class="catalog-step">
+            <span class="catalog-step__num">3</span>
+            <div>
+              <h4>Payez et téléchargez</h4>
+              <p>Paiement Stripe sécurisé, puis téléchargement ZIP immédiat depuis votre compte.</p>
+            </div>
+          </div>
+          <a href="ebook.html" class="btn-landing btn-landing--primary btn-landing--block btn-landing--lg">
+            <i class="bi bi-grid-3x3-gap-fill"></i> Voir le catalogue
+          </a>
+        </div>
+        <div class="catalog-preview">
+          <div class="catalog-preview__covers">
+            <div class="catalog-preview__cover">
+              <img src="assets/ebooks/covers/matiere_premiere.png" alt="Matière première">
+            </div>
+            <div class="catalog-preview__cover">
+              <img src="assets/ebooks/covers/alimentaires.png" alt="Alimentaires">
+            </div>
+            <div class="catalog-preview__cover">
+              <img src="assets/ebooks/covers/packaging.png" alt="Packaging">
+            </div>
+          </div>
+          <h4>Des milliers de contacts à portée de main</h4>
+          <p class="section-description">Chaque annuaire contient des fournisseurs triés par catégorie avec leurs coordonnées.</p>
+          <div class="catalog-preview__features">
+            <span class="catalog-preview__feature"><i class="bi bi-lightning-charge-fill"></i> Accès instantané</span>
+            <span class="catalog-preview__feature"><i class="bi bi-shield-check"></i> Paiement sécurisé</span>
+            <span class="catalog-preview__feature"><i class="bi bi-gift-fill"></i> 3 annuaires offerts</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="landing-section landing-section--gray">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Témoignages</span>
+        <h2 class="section-title">Ce que disent nos clients</h2>
+        <p class="section-description">Des entrepreneurs qui ont accéléré leur prospection grâce à nos annuaires</p>
+      </div>
+      <div class="landing-testimonials__grid">
+        <article class="testimonial-card">
+          <div class="testimonial-rating">
+            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+          </div>
+          <p class="testimonial-text">« J'ai trouvé 3 fournisseurs cosmétiques en une journée grâce à l'annuaire. Les contacts étaient à jour et m'ont fait gagner des semaines de recherche. »</p>
+          <div class="testimonial-user">
+            <div class="testimonial-avatar">ML</div>
+            <div>
+              <h5 class="testimonial-name">Marie L.</h5>
+              <p class="testimonial-role">Créatrice de marque beauté</p>
+            </div>
+          </div>
+        </article>
+        <article class="testimonial-card">
+          <div class="testimonial-rating">
+            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+          </div>
+          <p class="testimonial-text">« Le rapport qualité-prix est excellent. Pour moins de 20&nbsp;€, j'ai accès à des milliers de contacts alimentaires que je n'aurais jamais trouvés seul. »</p>
+          <div class="testimonial-user">
+            <div class="testimonial-avatar">TD</div>
+            <div>
+              <h5 class="testimonial-name">Thomas D.</h5>
+              <p class="testimonial-role">Gérant e-commerce</p>
+            </div>
+          </div>
+        </article>
+        <article class="testimonial-card">
+          <div class="testimonial-rating">
+            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+          </div>
+          <p class="testimonial-text">« L'annuaire matière première m'a permis de sourcer mes composants rapidement. Le téléchargement ZIP est pratique et bien organisé. »</p>
+          <div class="testimonial-user">
+            <div class="testimonial-avatar">SK</div>
+            <div>
+              <h5 class="testimonial-name">Sophie K.</h5>
+              <p class="testimonial-role">Responsable achats</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="landing-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Questions fréquentes</span>
+        <h2 class="section-title">FAQ</h2>
+        <p class="section-description">Tout ce que vous devez savoir sur nos annuaires fournisseurs</p>
+      </div>
+      <div class="landing-faq">
+        <div class="faq-item">
+          <button class="faq-item__btn" type="button" aria-expanded="true">
+            Qu'est-ce qu'un annuaire Les bons contacts ?
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="faq-item__body is-open">
+            <div class="faq-item__content">
+              Chaque annuaire est un fichier ZIP contenant des contacts de fournisseurs professionnels triés par secteur d'activité — noms, coordonnées et informations utiles pour votre prospection B2B.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__btn" type="button" aria-expanded="false">
+            Comment télécharger mon annuaire après achat ?
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="faq-item__body">
+            <div class="faq-item__content">
+              Connectez-vous à votre compte, rendez-vous sur la page Ebooks : les annuaires achetés sont débloqués et un bouton de téléchargement apparaît sur chaque carte.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__btn" type="button" aria-expanded="false">
+            Le paiement est-il sécurisé ?
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="faq-item__body">
+            <div class="faq-item__content">
+              Oui, tous les paiements passent par Stripe, une plateforme de paiement certifiée PCI-DSS. Nous ne stockons jamais vos données bancaires.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__btn" type="button" aria-expanded="false">
+            Y a-t-il des annuaires gratuits ?
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="faq-item__body">
+            <div class="faq-item__content">
+              Oui, les annuaires Livres, Plantes et Papeteries sont entièrement gratuits. Créez un compte pour les télécharger immédiatement sans passer par le paiement.
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-item__btn" type="button" aria-expanded="false">
+            Puis-je acheter plusieurs annuaires en une fois ?
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="faq-item__body">
+            <div class="faq-item__content">
+              Absolument. Ajoutez autant d'annuaires que vous souhaitez à votre panier et réglez en une seule transaction via Stripe Checkout.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="landing-cta" id="cta">
+    <div class="container">
+      <div class="landing-cta__grid">
+        <div>
+          <h2 class="landing-cta__title">Prêt à trouver vos fournisseurs ?</h2>
+          <p class="landing-cta__text">Parcourez le catalogue et commencez dès aujourd'hui — les annuaires Livres, Plantes et Papeteries sont offerts.</p>
+        </div>
+        <a href="ebook.html" class="btn-landing btn-landing--light btn-landing--lg">Voir le catalogue</a>
+      </div>
+    </div>
+  </section>
+
+  </main>
 
   <script src="js/user.js"></script>
+  <script src="js/true-focus.js"></script>
+  <script src="js/layout.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/cart-ui.js"></script>
-  <script src="js/footer.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/landing.js"></script>
 </body>
 </html>

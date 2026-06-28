@@ -9,16 +9,19 @@ function updateCartBadge() {
 }
 
 function injectCartLink() {
-  const nav = document.querySelector(".header .nav");
+  const nav = document.querySelector(".header .nav, .landing-nav .nav");
   if (!nav || nav.querySelector(".nav__cart")) return;
 
-  const link = document.createElement("a");
-  link.href = "panier.html";
-  link.className = "nav__link nav__cart";
-  link.innerHTML = `Panier <span class="nav__cart-count" id="cart-count" hidden>0</span>`;
-  nav.appendChild(link);
+  const li = document.createElement("li");
+  li.innerHTML = `<a href="panier.html" class="nav__link nav__cart">Panier <span class="nav__cart-count" id="cart-count" hidden>0</span></a>`;
+  nav.appendChild(li);
   updateCartBadge();
 }
 
+window.injectCartLink = injectCartLink;
+
 document.addEventListener("cart-updated", updateCartBadge);
 injectCartLink();
+if (typeof window.updateNavAuth === "function") {
+  window.updateNavAuth();
+}

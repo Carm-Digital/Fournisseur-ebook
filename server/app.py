@@ -11,13 +11,94 @@ ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 DOMAIN = os.getenv("DOMAIN", "http://localhost:4242").rstrip("/")
+PROTECT_DOWNLOADS = os.getenv("PROTECT_DOWNLOADS", "true").lower() == "true"
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+USE_SUPABASE = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
+
+FREE_EBOOK_IDS = {"livres", "papeteries", "plantes"}
 
 app = Flask(__name__)
 CORS(app)
 
 with open(ROOT / "data" / "ebooks.json", encoding="utf-8") as f:
     CATALOG = {e["id"]: e for e in json.load(f)}
+
+with open(ROOT / "data" / "ebook-files.json", encoding="utf-8") as f:
+    EBOOK_FILES = json.load(f)
+
+_supabase_admin = None
+
+
+def get_supabase_admin():
+    global _supabase_admin
+    if not USE_SUPABASE:
+        return None
+    if _supabase_admin is None:
+        from supabase import create_client
+
+        _supabase_admin = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    return _supabase_admin
+
+
+def verify_access_token(token):
+    if not token or not USE_SUPABASE:
+        return None
+    try:
+        client = get_supabase_admin()
+        response = client.auth.get_user(token)
+        return response.user
+    except Exception:
+        return None
+
+
+def user_has_purchase(user_id, ebook_id):
+    if not USE_SUPABASE:
+        return False
+    client = get_supabase_admin()
+    result = (
+        client.table("purchases")
+        .select("id")
+        .eq("user_id", user_id)
+        .eq("ebook_id", ebook_id)
+        .limit(1)
+        .execute()
+    )
+    return bool(result.data)
+
+
+def record_purchases(user_id, ebook_ids, stripe_session_id=None):
+    if not USE_SUPABASE or not user_id:
+        return
+    client = get_supabase_admin()
+    rows = [
+        {
+            "user_id": user_id,
+            "ebook_id": ebook_id,
+            "stripe_session_id": stripe_session_id,
+        }
+        for ebook_id in ebook_ids
+        if ebook_id in CATALOG
+    ]
+    if rows:
+        client.table("purchases").upsert(rows, on_conflict="user_id,ebook_id").execute()
+
+
+def can_download(user, ebook_id):
+    ebook = CATALOG.get(ebook_id)
+    if not ebook or ebook_id not in EBOOK_FILES:
+        return False, "Ebook introuvable."
+    if not user:
+        return False, "Connectez-vous pour télécharger."
+    if ebook["price"] == 0 and ebook_id in FREE_EBOOK_IDS:
+        return True, None
+    if user_has_purchase(user.id, ebook_id):
+        return True, None
+    return False, "Achat requis pour télécharger cet annuaire."
 
 
 def build_line_items(ebook_ids):
@@ -46,6 +127,59 @@ def build_line_items(ebook_ids):
     return line_items, valid_ids
 
 
+@app.get("/api/public-config")
+def public_config():
+    return jsonify(
+        useSupabase=USE_SUPABASE,
+        supabaseUrl=SUPABASE_URL if USE_SUPABASE else "",
+        supabaseAnonKey=SUPABASE_ANON_KEY if USE_SUPABASE else "",
+        protectDownloads=PROTECT_DOWNLOADS,
+    )
+
+
+@app.get("/api/health")
+def health():
+    return jsonify(
+        ok=True,
+        supabase=USE_SUPABASE,
+        stripe=bool(stripe.api_key and not stripe.api_key.startswith("sk_test_VOTRE")),
+    )
+
+
+@app.get("/api/my-purchases")
+def my_purchases():
+    token = (request.headers.get("Authorization") or "").replace("Bearer ", "").strip()
+    user = verify_access_token(token)
+    if not user:
+        return jsonify(error="Non authentifié"), 401
+
+    client = get_supabase_admin()
+    result = client.table("purchases").select("ebook_id").eq("user_id", user.id).execute()
+    ebook_ids = [row["ebook_id"] for row in (result.data or [])]
+    return jsonify(ebookIds=ebook_ids)
+
+
+@app.get("/api/download/<ebook_id>")
+def download_ebook(ebook_id):
+    token = (request.headers.get("Authorization") or "").replace("Bearer ", "").strip()
+    user = verify_access_token(token)
+    allowed, message = can_download(user, ebook_id)
+    if not allowed:
+        return jsonify(error=message), 403 if user else 401
+
+    rel_path = EBOOK_FILES.get(ebook_id)
+    file_path = ROOT / rel_path
+    if not file_path.is_file():
+        return jsonify(error="Fichier indisponible sur le serveur."), 404
+
+    return send_from_directory(
+        file_path.parent,
+        file_path.name,
+        as_attachment=True,
+        download_name=file_path.name,
+    )
+
+
 @app.post("/api/create-checkout-session")
 def create_checkout_session():
     if not stripe.api_key or stripe.api_key.startswith("sk_test_VOTRE"):
@@ -54,14 +188,25 @@ def create_checkout_session():
     data = request.get_json(silent=True) or {}
     ebook_ids = data.get("ebookIds", [])
     email = (data.get("email") or "").lower().strip()
+    user_id = (data.get("userId") or "").strip()
 
     if not email or not isinstance(ebook_ids, list) or not ebook_ids:
         return jsonify(error="Requête invalide"), 400
+
+    if USE_SUPABASE and not user_id:
+        return jsonify(error="Identifiant utilisateur manquant."), 400
 
     line_items, valid_ids = build_line_items(ebook_ids)
 
     if not line_items:
         return jsonify(error="Aucun ebook payable dans le panier"), 400
+
+    metadata = {
+        "ebook_ids": ",".join(valid_ids),
+        "user_email": email,
+    }
+    if user_id:
+        metadata["user_id"] = user_id
 
     try:
         session = stripe.checkout.Session.create(
@@ -71,15 +216,37 @@ def create_checkout_session():
             customer_email=email,
             success_url=f"{DOMAIN}/success.html?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{DOMAIN}/panier.html?cancel=1",
-            metadata={
-                "ebook_ids": ",".join(valid_ids),
-                "user_email": email,
-            },
+            metadata=metadata,
         )
     except stripe.error.StripeError as exc:
         return jsonify(error=str(exc.user_message or exc)), 400
 
     return jsonify(url=session.url)
+
+
+@app.post("/api/stripe-webhook")
+def stripe_webhook():
+    if not STRIPE_WEBHOOK_SECRET:
+        return jsonify(error="Webhook non configuré"), 500
+
+    payload = request.data
+    sig_header = request.headers.get("Stripe-Signature", "")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+    except ValueError:
+        return jsonify(error="Payload invalide"), 400
+    except stripe.error.SignatureVerificationError:
+        return jsonify(error="Signature invalide"), 400
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        if session.get("payment_status") == "paid":
+            ebook_ids = [x for x in session.get("metadata", {}).get("ebook_ids", "").split(",") if x]
+            user_id = session.get("metadata", {}).get("user_id", "")
+            record_purchases(user_id, ebook_ids, session.get("id"))
+
+    return jsonify(received=True)
 
 
 @app.get("/api/verify-session")
@@ -101,8 +268,12 @@ def verify_session():
 
     ebook_ids = [x for x in session.metadata.get("ebook_ids", "").split(",") if x]
     email = session.metadata.get("user_email", "")
+    user_id = session.metadata.get("user_id", "")
 
-    return jsonify(ok=True, ebookIds=ebook_ids, email=email)
+    if USE_SUPABASE and user_id:
+        record_purchases(user_id, ebook_ids, session_id)
+
+    return jsonify(ok=True, ebookIds=ebook_ids, email=email, userId=user_id)
 
 
 @app.route("/", defaults={"path": "index.html"})
@@ -110,6 +281,9 @@ def verify_session():
 def serve_static(path):
     if path.startswith("api/"):
         return jsonify(error="Not found"), 404
+
+    if PROTECT_DOWNLOADS and path.startswith("assets/ebooks/extracted/"):
+        return jsonify(error="Téléchargement protégé. Connectez-vous et utilisez votre espace ebooks."), 403
 
     target = ROOT / path
     if target.is_file():
@@ -124,6 +298,8 @@ def serve_static(path):
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "4242"))
+    debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
     print(f"Serveur : {DOMAIN}")
-    print("Configurez STRIPE_SECRET_KEY dans .env pour activer les paiements.")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    print(f"Supabase : {'activé' if USE_SUPABASE else 'désactivé (mode localStorage)'}")
+    print("Configurez STRIPE_SECRET_KEY et SUPABASE_* dans .env pour la production.")
+    app.run(host="0.0.0.0", port=port, debug=debug)

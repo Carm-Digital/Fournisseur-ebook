@@ -1,10 +1,10 @@
 const API_BASE = window.location.origin;
 
-async function startStripeCheckout(ebookIds, email) {
+async function startStripeCheckout(ebookIds, email, userId) {
   const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ebookIds, email }),
+    body: JSON.stringify({ ebookIds, email, userId }),
   });
 
   const data = await response.json();

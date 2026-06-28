@@ -1,0 +1,9 @@
+{
+  "name": "les-bons-contacts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site Les bons contacts — annuaires ebooks",
+  "dependencies": {
+    "motion": "^12.42.0"
+  }
+}

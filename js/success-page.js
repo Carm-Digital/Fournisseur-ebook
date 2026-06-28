@@ -1,6 +1,8 @@
 const statusEl = document.getElementById("success-status");
 
 async function handleSuccess() {
+  await UserStore.init();
+
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get("session_id");
 
@@ -24,9 +26,13 @@ async function handleSuccess() {
       return;
     }
 
-    data.ebookIds.forEach((id) => UserStore.purchase(id));
-    CartStore.clear();
+    if (UserStore.usesSupabase()) {
+      await UserStore.refreshPurchases();
+    } else {
+      data.ebookIds.forEach((id) => UserStore.purchase(id));
+    }
 
+    CartStore.clear();
     window.location.href = "ebook.html?achat=ok";
   } catch (error) {
     statusEl.textContent = error.message;

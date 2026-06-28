@@ -10,10 +10,10 @@
   { "id": "miels", "title": "Annuaire Miels", "price": 12.9, "suppliers": 398 },
   { "id": "montres", "title": "Annuaire Montres", "price": 14.9, "suppliers": 543 },
   { "id": "packaging", "title": "Annuaire Packaging", "price": 15.9, "suppliers": 797 },
-  { "id": "papeteries", "title": "Annuaire Papeteries", "price": 19.9, "suppliers": 5722 },
+  { "id": "papeteries", "title": "Annuaire Papeteries", "price": 0, "suppliers": 5722 },
   { "id": "parfums", "title": "Annuaire Parfums", "price": 17.9, "suppliers": 1048 },
   { "id": "personnalisation", "title": "Annuaire Personnalisation", "price": 17.9, "suppliers": 1905 },
-  { "id": "plantes", "title": "Annuaire Plantes", "price": 19.9, "suppliers": 4507 },
+  { "id": "plantes", "title": "Annuaire Plantes", "price": 0, "suppliers": 4507 },
   { "id": "sacs", "title": "Annuaire Sacs", "price": 9.9, "suppliers": 202 },
   { "id": "soins-capillaires", "title": "Annuaire Soins Capillaires", "price": 15.9, "suppliers": 784 }
 ]
