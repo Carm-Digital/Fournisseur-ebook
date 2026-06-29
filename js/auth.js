@@ -109,32 +109,88 @@ function bindAuthForms() {
     const result = await UserStore.register(name, email, password);
 
     if (!result.ok) {
-      showError(errorEl, result.error);
+      if (result.existingAccount) {
+        showExistingAccountNotice(errorEl, result.error);
+      } else {
+        showError(errorEl, result.error);
+      }
       return;
     }
 
     hideError(errorEl);
 
-    if (result.message) {
-      showError(errorEl, result.message);
-      errorEl.classList.add("auth__notice");
+    if (result.needsConfirmation && result.message) {
+      showRegisterSuccessNotice(errorEl, result.message);
       return;
     }
 
     window.location.href = getRedirectUrl();
   });
+
+  document.getElementById("forgot-password-link")?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const errorEl = document.getElementById("login-error");
+    const email = loginForm?.email?.value?.trim();
+
+    if (!email) {
+      showError(errorEl, "Entrez votre e-mail ci-dessus, puis cliquez sur « Mot de passe oublié ».");
+      loginForm?.email?.focus();
+      return;
+    }
+
+    const result = await UserStore.requestPasswordReset(email);
+
+    if (!result.ok) {
+      showError(errorEl, result.error);
+      return;
+    }
+
+    showNotice(errorEl, escapeHtml(result.message));
+  });
 }
 
-function showError(el, message) {
+function showNotice(el, message) {
   if (!el) return;
-  el.textContent = message;
+  el.innerHTML = message;
   el.hidden = false;
+  el.classList.add("auth__notice");
+}
+
+function buildAuthLink(path, label) {
+  const params = new URLSearchParams(window.location.search);
+  const from = params.get("from");
+  const href = from && !from.includes("://") ? `${path}?from=${encodeURIComponent(from)}` : path;
+  return `<a href="${href}" class="auth__link auth__link--bold">${label}</a>`;
+}
+
+function showRegisterSuccessNotice(el, message) {
+  showNotice(
+    el,
+    `${escapeHtml(message)} ${buildAuthLink("connexion.html", "Se connecter")}`
+  );
+
+  registerForm?.querySelector('button[type="submit"]')?.setAttribute("disabled", "disabled");
+}
+
+function showExistingAccountNotice(el, message) {
+  showNotice(
+    el,
+    `${escapeHtml(message)} ${buildAuthLink("connexion.html", "Se connecter")}`
+  );
 }
 
 function hideError(el) {
   if (!el) return;
   el.hidden = true;
   el.textContent = "";
+  el.innerHTML = "";
+  el.classList.remove("auth__notice");
+}
+
+function showError(el, message) {
+  if (!el) return;
+  el.textContent = message;
+  el.hidden = false;
   el.classList.remove("auth__notice");
 }
 
@@ -142,10 +198,16 @@ UserStore.init().then(async () => {
   if (UserStore.isLoggedIn()) {
     const params = new URLSearchParams(window.location.search);
     const from = params.get("from");
+    const page = document.body.dataset.page;
 
     if (from && !from.includes("://")) {
       await UserStore.refreshPurchases?.();
       window.location.href = from;
+      return;
+    }
+
+    if (page === "inscription") {
+      window.location.href = getRedirectUrl();
       return;
     }
 

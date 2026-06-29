@@ -36,7 +36,13 @@ const UserStore = {
       if (config.useSupabase && config.supabaseUrl && config.supabaseAnonKey) {
         await this._loadSupabaseLib();
         this._useSupabase = true;
-        this._supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+        this._supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+          },
+        });
         const { data } = await this._supabase.auth.getSession();
         if (data.session) {
           await this._applySupabaseSession(data.session);
@@ -99,26 +105,37 @@ const UserStore = {
 
   async register(name, email, password) {
     if (this._useSupabase) {
+      const normalizedEmail = email.toLowerCase().trim();
+
       const { data, error } = await this._supabase.auth.signUp({
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         password,
         options: { data: { name: name.trim() } },
       });
 
       if (error) {
-        return { ok: false, error: error.message };
+        return { ok: false, error: this._mapAuthError(error.message) };
+      }
+
+      if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+        return {
+          ok: false,
+          error: "Un compte existe déjà avec cet e-mail. Connectez-vous ou réinitialisez votre mot de passe.",
+          existingAccount: true,
+        };
       }
 
       if (data.session) {
         await this._applySupabaseSession(data.session);
-      } else {
-        return {
-          ok: true,
-          message: "Compte créé. Vérifiez votre e-mail pour confirmer l'inscription.",
-        };
+        return { ok: true };
       }
 
-      return { ok: true };
+      return {
+        ok: true,
+        needsConfirmation: true,
+        message:
+          "Compte créé ! Ouvrez l'e-mail de confirmation (vérifiez aussi les spams), cliquez sur le lien, puis connectez-vous.",
+      };
     }
 
     const users = this.getUsers();
@@ -149,7 +166,7 @@ const UserStore = {
       });
 
       if (error) {
-        return { ok: false, error: "E-mail ou mot de passe incorrect." };
+        return { ok: false, error: this._mapAuthError(error.message) };
       }
 
       await this._applySupabaseSession(data.session);
@@ -166,6 +183,50 @@ const UserStore = {
 
     this.setSession(key);
     return { ok: true, user };
+  },
+
+  async requestPasswordReset(email) {
+    if (!this._useSupabase || !this._supabase) {
+      return { ok: false, error: "Réinitialisation indisponible." };
+    }
+
+    await this.init();
+
+    const redirectTo = `${window.location.origin}/connexion.html`;
+    const { error } = await this._supabase.auth.resetPasswordForEmail(email.toLowerCase().trim(), {
+      redirectTo,
+    });
+
+    if (error) {
+      return { ok: false, error: this._mapAuthError(error.message) };
+    }
+
+    return {
+      ok: true,
+      message: "Si un compte existe avec cet e-mail, un lien de réinitialisation vient d'être envoyé.",
+    };
+  },
+
+  _mapAuthError(message) {
+    const msg = String(message || "").toLowerCase();
+
+    if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+      return "Confirmez votre e-mail avant de vous connecter. Vérifiez votre boîte de réception et vos spams.";
+    }
+
+    if (msg.includes("invalid login credentials") || msg.includes("invalid credentials")) {
+      return "E-mail ou mot de passe incorrect.";
+    }
+
+    if (msg.includes("user already registered") || msg.includes("already been registered")) {
+      return "Un compte existe déjà avec cet e-mail. Connectez-vous ou réinitialisez votre mot de passe.";
+    }
+
+    if (msg.includes("rate limit") || msg.includes("too many requests")) {
+      return "Trop de tentatives. Patientez quelques minutes puis réessayez.";
+    }
+
+    return message || "Une erreur est survenue.";
   },
 
   async logout() {
