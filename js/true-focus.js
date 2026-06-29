@@ -4,12 +4,15 @@ function initTrueFocus(container, options = {}) {
   const sentence = options.sentence ?? container.dataset.sentence ?? "Les bon plan";
   const separator = options.separator ?? container.dataset.separator ?? " ";
   const manualMode = options.manualMode ?? container.dataset.manualMode === "true";
-  const blurAmount = Number(options.blurAmount ?? container.dataset.blurAmount ?? 5);
   const borderColor = options.borderColor ?? container.dataset.borderColor ?? "#E8341A";
   const glowColor = options.glowColor ?? container.dataset.glowColor ?? "rgba(232, 52, 26, 0.6)";
-  const animationDuration = Number(options.animationDuration ?? container.dataset.animationDuration ?? 0.5);
+  const animationDuration = Number(options.animationDuration ?? container.dataset.animationDuration ?? 0.4);
   const pauseBetweenAnimations = Number(
-    options.pauseBetweenAnimations ?? container.dataset.pauseBetween ?? 1
+    options.pauseBetweenAnimations ?? container.dataset.pauseBetween ?? 0.35
+  );
+  const staggerDelay = Number(options.staggerDelay ?? container.dataset.staggerDelay ?? 0.08);
+  const entranceDuration = Number(
+    options.entranceDuration ?? container.dataset.entranceDuration ?? 0.4
   );
 
   const words = sentence.split(separator).filter(Boolean);
@@ -19,6 +22,7 @@ function initTrueFocus(container, options = {}) {
   let currentIndex = 0;
   let lastActiveIndex = null;
   let intervalId = null;
+  let cyclingStarted = false;
   const wordEls = [];
 
   container.dataset.trueFocusInit = "true";
@@ -31,7 +35,8 @@ function initTrueFocus(container, options = {}) {
     span.textContent = word;
     span.style.setProperty("--border-color", borderColor);
     span.style.setProperty("--glow-color", glowColor);
-    span.style.transition = `filter ${animationDuration}s ease`;
+    span.style.setProperty("--entrance-duration", `${entranceDuration}s`);
+    span.style.setProperty("--stagger-index", String(index));
 
     if (manualMode) {
       span.addEventListener("mouseenter", () => {
@@ -59,17 +64,20 @@ function initTrueFocus(container, options = {}) {
   `;
   container.appendChild(frame);
 
-  function updateBlur() {
+  function updateHighlight() {
     wordEls.forEach((el, index) => {
       const isActive = index === currentIndex;
-      el.style.filter = isActive ? "blur(0px)" : `blur(${blurAmount}px)`;
-      el.classList.toggle("active", isActive && !manualMode);
+      el.classList.toggle("focus-word--active", isActive && cyclingStarted && !manualMode);
+      el.classList.toggle("focus-word--dim", !isActive && cyclingStarted && !manualMode);
     });
   }
 
   function updateFrame() {
     const activeEl = wordEls[currentIndex];
-    if (!activeEl) return;
+    if (!activeEl || !cyclingStarted) {
+      frame.style.opacity = "0";
+      return;
+    }
 
     const parentRect = container.getBoundingClientRect();
     const activeRect = activeEl.getBoundingClientRect();
@@ -79,7 +87,7 @@ function initTrueFocus(container, options = {}) {
     frame.style.transition = reducedMotion
       ? "none"
       : `transform ${animationDuration}s ease, width ${animationDuration}s ease, height ${animationDuration}s ease, opacity ${animationDuration}s ease`;
-    frame.style.transform = `translate(${x}px, ${y}px)`;
+    frame.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     frame.style.width = `${activeRect.width}px`;
     frame.style.height = `${activeRect.height}px`;
     frame.style.opacity = currentIndex >= 0 ? "1" : "0";
@@ -87,7 +95,7 @@ function initTrueFocus(container, options = {}) {
 
   function goToIndex(index) {
     currentIndex = ((index % words.length) + words.length) % words.length;
-    updateBlur();
+    updateHighlight();
     updateFrame();
   }
 
@@ -99,8 +107,31 @@ function initTrueFocus(container, options = {}) {
     }, (animationDuration + pauseBetweenAnimations) * 1000);
   }
 
-  goToIndex(0);
-  startAutoPlay();
+  function finishEntrance() {
+    cyclingStarted = true;
+    goToIndex(0);
+    startAutoPlay();
+  }
+
+  function runEntrance() {
+    if (reducedMotion) {
+      wordEls.forEach((el) => el.classList.add("focus-word--visible"));
+      finishEntrance();
+      return;
+    }
+
+    wordEls.forEach((el, index) => {
+      window.setTimeout(() => {
+        el.classList.add("focus-word--visible");
+
+        if (index === wordEls.length - 1) {
+          window.setTimeout(finishEntrance, entranceDuration * 1000);
+        }
+      }, index * staggerDelay * 1000);
+    });
+  }
+
+  runEntrance();
 
   const resizeObserver = new ResizeObserver(() => updateFrame());
   resizeObserver.observe(container);

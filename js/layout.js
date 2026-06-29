@@ -141,9 +141,10 @@ function renderNav() {
         <span
           data-true-focus
           data-sentence="Les bons contacts"
-          data-blur-amount="5"
           data-border-color="#E8341A"
-          data-animation-duration="0.25"
+          data-entrance-duration="0.4"
+          data-stagger-delay="0.08"
+          data-animation-duration="0.4"
           data-pause-between="0.35"
           aria-label="Les bons contacts"
         ></span>
