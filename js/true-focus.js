@@ -117,8 +117,10 @@ function initTrueFocus(container, options = {}) {
     cyclingStarted = true;
     wordEls.forEach((el) => {
       el.classList.add("focus-word--visible");
-      el.classList.remove("focus-word--dim", "focus-word--active");
-      el.style.willChange = "auto";
+      if (noCycle) {
+        el.classList.remove("focus-word--dim", "focus-word--active");
+        el.style.willChange = "auto";
+      }
     });
     if (!noCycle) {
       goToIndex(0);

@@ -140,11 +140,12 @@ function renderNav() {
         >
         <span
           data-true-focus
-          data-no-cycle="true"
           data-sentence="Les bons contacts"
           data-border-color="#E8341A"
-          data-entrance-duration="0.35"
-          data-stagger-delay="0.06"
+          data-entrance-duration="0.4"
+          data-stagger-delay="0.08"
+          data-animation-duration="0.4"
+          data-pause-between="0.35"
           aria-label="Les bons contacts"
         >Les bons contacts</span>
       </a>
