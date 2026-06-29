@@ -1,15 +1,3 @@
-function isCoarsePointer() {
-  return window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-}
-
-function isNarrowViewport() {
-  return window.matchMedia("(max-width: 768px)").matches;
-}
-
-function useSimpleTitleMode(container) {
-  return isCoarsePointer() || isNarrowViewport();
-}
-
 function initTrueFocus(container, options = {}) {
   if (!container || container.dataset.trueFocusInit === "true") return;
 
@@ -26,9 +14,7 @@ function initTrueFocus(container, options = {}) {
   const entranceDuration = Number(
     options.entranceDuration ?? container.dataset.entranceDuration ?? 0.4
   );
-  const simpleMode = useSimpleTitleMode(container);
-  const noCycle =
-    options.noCycle ?? container.dataset.noCycle === "true" || simpleMode;
+  const noCycle = options.noCycle ?? container.dataset.noCycle === "true";
 
   const words = sentence.split(separator).filter(Boolean);
   if (!words.length) return;
@@ -43,7 +29,6 @@ function initTrueFocus(container, options = {}) {
   container.dataset.trueFocusInit = "true";
   container.classList.add("focus-container");
   if (noCycle) container.classList.add("focus-container--static");
-  if (simpleMode) container.classList.add("focus-container--simple");
   container.innerHTML = "";
 
   words.forEach((word, index) => {
@@ -53,6 +38,7 @@ function initTrueFocus(container, options = {}) {
     span.style.setProperty("--border-color", borderColor);
     span.style.setProperty("--glow-color", glowColor);
     span.style.setProperty("--entrance-duration", `${entranceDuration}s`);
+    span.style.setProperty("--cycle-duration", `${animationDuration}s`);
     span.style.setProperty("--stagger-index", String(index));
 
     if (manualMode) {
@@ -83,6 +69,12 @@ function initTrueFocus(container, options = {}) {
     container.appendChild(frame);
   }
 
+  function scheduleFrameUpdate() {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => updateFrame());
+    });
+  }
+
   function updateHighlight() {
     if (noCycle) return;
     wordEls.forEach((el, index) => {
@@ -109,15 +101,15 @@ function initTrueFocus(container, options = {}) {
       ? "none"
       : `transform ${animationDuration}s ease, width ${animationDuration}s ease, height ${animationDuration}s ease, opacity ${animationDuration}s ease`;
     frame.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    frame.style.width = `${activeRect.width}px`;
-    frame.style.height = `${activeRect.height}px`;
-    frame.style.opacity = currentIndex >= 0 ? "1" : "0";
+    frame.style.width = `${Math.max(activeRect.width, 1)}px`;
+    frame.style.height = `${Math.max(activeRect.height, 1)}px`;
+    frame.style.opacity = "1";
   }
 
   function goToIndex(index) {
     currentIndex = ((index % words.length) + words.length) % words.length;
     updateHighlight();
-    updateFrame();
+    scheduleFrameUpdate();
   }
 
   function startAutoPlay() {
@@ -140,15 +132,16 @@ function initTrueFocus(container, options = {}) {
     if (!noCycle) {
       goToIndex(0);
       startAutoPlay();
+      scheduleFrameUpdate();
+      if (document.fonts?.ready) {
+        document.fonts.ready.then(scheduleFrameUpdate).catch(() => {});
+      }
     }
   }
 
   function runEntrance() {
-    if (simpleMode || reducedMotion) {
-      wordEls.forEach((el) => {
-        el.classList.add("focus-word--visible");
-        el.style.willChange = "auto";
-      });
+    if (reducedMotion) {
+      wordEls.forEach((el) => el.classList.add("focus-word--visible"));
       finishEntrance();
       return;
     }
@@ -167,11 +160,15 @@ function initTrueFocus(container, options = {}) {
   runEntrance();
 
   let resizeObserver = null;
+  const onLayoutChange = () => scheduleFrameUpdate();
+
   if (!noCycle) {
-    resizeObserver = new ResizeObserver(() => updateFrame());
+    resizeObserver = new ResizeObserver(onLayoutChange);
     resizeObserver.observe(container);
     wordEls.forEach((el) => resizeObserver.observe(el));
-    window.addEventListener("resize", updateFrame);
+    window.addEventListener("resize", onLayoutChange);
+    window.addEventListener("orientationchange", onLayoutChange);
+    window.addEventListener("pageshow", onLayoutChange);
   }
 
   return {
@@ -179,7 +176,9 @@ function initTrueFocus(container, options = {}) {
       clearInterval(intervalId);
       if (resizeObserver) {
         resizeObserver.disconnect();
-        window.removeEventListener("resize", updateFrame);
+        window.removeEventListener("resize", onLayoutChange);
+        window.removeEventListener("orientationchange", onLayoutChange);
+        window.removeEventListener("pageshow", onLayoutChange);
       }
       container.dataset.trueFocusInit = "";
     },
