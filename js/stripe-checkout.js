@@ -22,8 +22,12 @@ async function startStripeCheckout(ebookIds, email, userId) {
 }
 
 async function verifyStripeSession(sessionId) {
+  const token = await UserStore.getAccessToken();
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
   const data = await ApiClient.fetchJson(
-    `/api/verify-session?session_id=${encodeURIComponent(sessionId)}`
+    `/api/verify-session?session_id=${encodeURIComponent(sessionId)}`,
+    { headers }
   );
 
   if (!data.ok) {

@@ -1,6 +1,6 @@
 import Stripe from "stripe";
-import { recordPurchases } from "../lib/supabase.js";
-import { getStripeSecretKey, STRIPE_WEBHOOK_SECRET } from "../lib/config.js";
+import { recordPurchases, resolveUserIdByEmail } from "../lib/supabase.js";
+import { getStripeSecretKey, STRIPE_WEBHOOK_SECRET, USE_SUPABASE } from "../lib/config.js";
 import { methodNotAllowed, sendJson, withApi } from "../lib/http.js";
 
 export const config = {
@@ -42,7 +42,17 @@ async function handler(req, res) {
         const ebookIds = (session.metadata?.ebook_ids || "")
           .split(",")
           .filter(Boolean);
-        const userId = session.metadata?.user_id || "";
+        const sessionEmail = String(
+          session.metadata?.user_email || session.customer_details?.email || session.customer_email || ""
+        )
+          .toLowerCase()
+          .trim();
+        let userId = session.metadata?.user_id || "";
+
+        if (USE_SUPABASE && sessionEmail) {
+          userId = (await resolveUserIdByEmail(sessionEmail)) || userId;
+        }
+
         await recordPurchases(userId, ebookIds, session.id);
       }
     }

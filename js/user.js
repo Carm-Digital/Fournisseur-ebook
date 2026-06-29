@@ -300,12 +300,22 @@ const UserStore = {
     if (!token) return;
 
     try {
-      const data = await ApiClient.fetchJson("/api/my-purchases", {
+      const data = await ApiClient.fetchJson("/api/sync-purchases", {
         headers: { Authorization: `Bearer ${token}` },
       });
       this._purchases = new Set(data.ebookIds || []);
-    } catch {
+      document.dispatchEvent(new Event("cart-updated"));
       return;
+    } catch {
+      try {
+        const data = await ApiClient.fetchJson("/api/my-purchases", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        this._purchases = new Set(data.ebookIds || []);
+        document.dispatchEvent(new Event("cart-updated"));
+      } catch {
+        return;
+      }
     }
   },
 

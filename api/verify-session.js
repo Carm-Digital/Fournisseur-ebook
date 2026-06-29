@@ -1,5 +1,6 @@
 import { verifyCheckoutSession } from "../lib/stripe-checkout.js";
 import { getStripeSecretKey } from "../lib/config.js";
+import { verifyAccessToken } from "../lib/supabase.js";
 import { methodNotAllowed, sendJson, withApi } from "../lib/http.js";
 
 async function handler(req, res) {
@@ -15,8 +16,13 @@ async function handler(req, res) {
     return sendJson(req, res, 400, { ok: false, error: "Session manquante" });
   }
 
+  const token = String(req.headers.authorization || "")
+    .replace(/^Bearer\s+/i, "")
+    .trim();
+  const authUser = await verifyAccessToken(token);
+
   try {
-    const data = await verifyCheckoutSession(sessionId, req);
+    const data = await verifyCheckoutSession(sessionId, req, authUser?.id || null);
     return sendJson(req, res, 200, data);
   } catch (error) {
     return sendJson(req, res, error.status || 400, { ok: false, error: error.message });
