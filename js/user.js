@@ -19,8 +19,8 @@ const UserStore = {
 
   async _doInit() {
     try {
-      const response = await fetch(`${window.location.origin}/api/public-config`);
-      const config = await response.json();
+      const config = await ApiClient.fetchJson("/api/public-config");
+      if (config.apiBase) ApiClient.setBase(config.apiBase);
       this._protectDownloads = Boolean(config.protectDownloads);
 
       if (config.useSupabase && config.supabaseUrl && config.supabaseAnonKey) {
@@ -216,14 +216,14 @@ const UserStore = {
     const token = await this.getAccessToken();
     if (!token) return;
 
-    const response = await fetch(`${window.location.origin}/api/my-purchases`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) return;
-
-    const data = await response.json();
-    this._purchases = new Set(data.ebookIds || []);
+    try {
+      const data = await ApiClient.fetchJson("/api/my-purchases", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      this._purchases = new Set(data.ebookIds || []);
+    } catch {
+      return;
+    }
   },
 
   purchase(ebookId) {
@@ -265,13 +265,17 @@ const UserStore = {
       return true;
     }
 
-    const response = await fetch(url, {
+    const response = await fetch(ApiClient.buildUrl(url), {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      alert(data.error || "Téléchargement impossible.");
+      try {
+        const { data } = await ApiClient.parseResponse(response);
+        alert(data.error || "Téléchargement impossible.");
+      } catch (error) {
+        alert(error.message || "Téléchargement impossible.");
+      }
       return true;
     }
 

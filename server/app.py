@@ -13,6 +13,7 @@ load_dotenv(ROOT / ".env")
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 DOMAIN = os.getenv("DOMAIN", "http://localhost:4242").rstrip("/")
+API_BASE = os.getenv("API_BASE", DOMAIN).rstrip("/")
 PROTECT_DOWNLOADS = os.getenv("PROTECT_DOWNLOADS", "true").lower() == "true"
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
@@ -134,6 +135,7 @@ def public_config():
         supabaseUrl=SUPABASE_URL if USE_SUPABASE else "",
         supabaseAnonKey=SUPABASE_ANON_KEY if USE_SUPABASE else "",
         protectDownloads=PROTECT_DOWNLOADS,
+        apiBase=API_BASE,
     )
 
 
