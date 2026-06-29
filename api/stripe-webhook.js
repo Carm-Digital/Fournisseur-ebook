@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { recordPurchases } from "../lib/supabase.js";
-import { STRIPE_WEBHOOK_SECRET } from "../lib/config.js";
+import { getStripeSecretKey, STRIPE_WEBHOOK_SECRET } from "../lib/config.js";
 import { methodNotAllowed, sendJson, withApi } from "../lib/http.js";
 
 export const config = {
@@ -24,11 +24,16 @@ async function handler(req, res) {
     return sendJson(req, res, 500, { error: "Webhook non configuré" });
   }
 
+  const { key: stripeSecretKey, error: stripeKeyError } = getStripeSecretKey();
+  if (stripeKeyError) {
+    return sendJson(req, res, 500, { error: stripeKeyError });
+  }
+
   const payload = await readRawBody(req);
   const sigHeader = req.headers["stripe-signature"] || "";
 
   try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(stripeSecretKey);
     const event = stripe.webhooks.constructEvent(payload, sigHeader, STRIPE_WEBHOOK_SECRET);
 
     if (event.type === "checkout.session.completed") {

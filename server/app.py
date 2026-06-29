@@ -10,7 +10,6 @@ from flask_cors import CORS
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 DOMAIN = os.getenv("DOMAIN", "http://localhost:4242").rstrip("/")
 API_BASE = os.getenv("API_BASE", DOMAIN).rstrip("/")
@@ -22,6 +21,25 @@ SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 USE_SUPABASE = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
 
 FREE_EBOOK_IDS = {"livres", "papeteries", "plantes"}
+
+
+def validate_stripe_secret_key():
+    key = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
+    if not key or key.startswith("sk_test_VOTRE"):
+        return None, "STRIPE_SECRET_KEY manquante. Ajoutez la clé secrète (sk_...) dans .env."
+    if key.startswith("pk_"):
+        return None, (
+            "STRIPE_SECRET_KEY contient une clé publique (pk_). "
+            "Utilisez la clé secrète (sk_...) : Stripe Dashboard → Developers → API keys → Secret key."
+        )
+    if not key.startswith("sk_"):
+        return None, "STRIPE_SECRET_KEY invalide : elle doit commencer par sk_."
+    return key, None
+
+
+STRIPE_SECRET_KEY, STRIPE_SECRET_KEY_ERROR = validate_stripe_secret_key()
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
 
 app = Flask(__name__)
 CORS(app)
@@ -149,7 +167,8 @@ def health():
     return jsonify(
         ok=True,
         supabase=USE_SUPABASE,
-        stripe=bool(stripe.api_key and not stripe.api_key.startswith("sk_test_VOTRE")),
+        stripe=bool(STRIPE_SECRET_KEY and not STRIPE_SECRET_KEY_ERROR),
+        stripeKeyError=STRIPE_SECRET_KEY_ERROR,
     )
 
 
@@ -189,8 +208,8 @@ def download_ebook(ebook_id):
 
 @app.post("/api/create-checkout-session")
 def create_checkout_session():
-    if not stripe.api_key or stripe.api_key.startswith("sk_test_VOTRE"):
-        return jsonify(error="Clé Stripe non configurée. Remplissez le fichier .env"), 500
+    if STRIPE_SECRET_KEY_ERROR:
+        return jsonify(error=STRIPE_SECRET_KEY_ERROR), 500
 
     data = request.get_json(silent=True) or {}
     ebook_ids = data.get("ebookIds", [])
@@ -258,8 +277,8 @@ def stripe_webhook():
 
 @app.get("/api/verify-session")
 def verify_session():
-    if not stripe.api_key:
-        return jsonify(ok=False, error="Stripe non configuré"), 500
+    if STRIPE_SECRET_KEY_ERROR:
+        return jsonify(ok=False, error=STRIPE_SECRET_KEY_ERROR), 500
 
     session_id = request.args.get("session_id", "").strip()
     if not session_id:

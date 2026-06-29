@@ -1,14 +1,12 @@
 import { createCheckoutSession } from "../lib/stripe-checkout.js";
-import { STRIPE_SECRET_KEY } from "../lib/config.js";
+import { STRIPE_SECRET_KEY_ERROR } from "../lib/config.js";
 import { methodNotAllowed, sendJson, withApi } from "../lib/http.js";
 
 async function handler(req, res) {
   if (req.method !== "POST") return methodNotAllowed(req, res);
 
-  if (!STRIPE_SECRET_KEY || STRIPE_SECRET_KEY.startsWith("sk_test_VOTRE")) {
-    return sendJson(req, res, 500, {
-      error: "Clé Stripe non configurée. Ajoutez STRIPE_SECRET_KEY dans Vercel → Production.",
-    });
+  if (STRIPE_SECRET_KEY_ERROR) {
+    return sendJson(req, res, 500, { error: STRIPE_SECRET_KEY_ERROR });
   }
 
   try {

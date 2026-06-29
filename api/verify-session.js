@@ -1,12 +1,12 @@
 import { verifyCheckoutSession } from "../lib/stripe-checkout.js";
-import { STRIPE_SECRET_KEY } from "../lib/config.js";
+import { STRIPE_SECRET_KEY_ERROR } from "../lib/config.js";
 import { methodNotAllowed, sendJson, withApi } from "../lib/http.js";
 
 async function handler(req, res) {
   if (req.method !== "GET") return methodNotAllowed(req, res);
 
-  if (!STRIPE_SECRET_KEY) {
-    return sendJson(req, res, 500, { ok: false, error: "Stripe non configuré" });
+  if (STRIPE_SECRET_KEY_ERROR) {
+    return sendJson(req, res, 500, { ok: false, error: STRIPE_SECRET_KEY_ERROR });
   }
 
   const sessionId = String(req.query.session_id || "").trim();
