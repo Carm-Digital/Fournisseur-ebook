@@ -1,3 +1,15 @@
+function isCoarsePointer() {
+  return window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+}
+
+function isNarrowViewport() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
+
+function useSimpleTitleMode(container) {
+  return isCoarsePointer() || isNarrowViewport();
+}
+
 function initTrueFocus(container, options = {}) {
   if (!container || container.dataset.trueFocusInit === "true") return;
 
@@ -14,7 +26,9 @@ function initTrueFocus(container, options = {}) {
   const entranceDuration = Number(
     options.entranceDuration ?? container.dataset.entranceDuration ?? 0.4
   );
-  const noCycle = options.noCycle ?? container.dataset.noCycle === "true";
+  const simpleMode = useSimpleTitleMode(container);
+  const noCycle =
+    options.noCycle ?? container.dataset.noCycle === "true" || simpleMode;
 
   const words = sentence.split(separator).filter(Boolean);
   if (!words.length) return;
@@ -29,6 +43,7 @@ function initTrueFocus(container, options = {}) {
   container.dataset.trueFocusInit = "true";
   container.classList.add("focus-container");
   if (noCycle) container.classList.add("focus-container--static");
+  if (simpleMode) container.classList.add("focus-container--simple");
   container.innerHTML = "";
 
   words.forEach((word, index) => {
@@ -129,8 +144,11 @@ function initTrueFocus(container, options = {}) {
   }
 
   function runEntrance() {
-    if (reducedMotion) {
-      wordEls.forEach((el) => el.classList.add("focus-word--visible"));
+    if (simpleMode || reducedMotion) {
+      wordEls.forEach((el) => {
+        el.classList.add("focus-word--visible");
+        el.style.willChange = "auto";
+      });
       finishEntrance();
       return;
     }
