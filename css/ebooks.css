@@ -103,7 +103,7 @@
   scroll-snap-type: x proximity;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
   padding: 1.25rem 0 1.5rem;
   outline: none;
@@ -563,6 +563,13 @@
     gap: 0.35rem;
   }
 
+  .ebooks-carousel__viewport {
+    scroll-snap-type: x mandatory;
+    scroll-behavior: auto;
+    cursor: default;
+    padding: 1rem 0 1.25rem;
+  }
+
   .ebooks-carousel__btn {
     width: 36px;
     height: 36px;
@@ -576,5 +583,20 @@
 
   .ebook-card {
     flex: 0 0 min(82vw, 280px);
+    filter: none;
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .ebook-card--dist-1,
+  .ebook-card--dist-2,
+  .ebook-card--dist-3,
+  .ebook-card--dist-4,
+  .ebook-card--dist-5,
+  .ebook-card--far {
+    filter: none;
   }
 }

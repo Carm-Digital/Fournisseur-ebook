@@ -68,6 +68,8 @@ const carouselNext = document.getElementById("ebooks-carousel-next");
 
 const CAROUSEL_BUFFER = 5;
 const LOCKED_PREVIEW_SRC = "assets/ebooks/placeholder.svg";
+const isTouchCarousel =
+  window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
 
 function getCarouselCards() {
   return grid ? [...grid.querySelectorAll(".ebook-card")] : [];
@@ -180,6 +182,13 @@ function onCarouselScrollEnd() {
   if (carouselDrag || carouselViewport?.classList.contains("is-dragging")) return;
 
   const index = getCarouselCenterIndex();
+
+  if (isTouchCarousel) {
+    carouselActiveIndex = index;
+    applyCarouselFocus(index);
+    return;
+  }
+
   if (!isCardCentered(index)) {
     scrollCarouselToIndex(index, "smooth");
     return;
@@ -192,6 +201,11 @@ function onCarouselScrollEnd() {
 }
 
 function onCarouselScroll() {
+  if (isTouchCarousel) {
+    scheduleCarouselScrollEnd();
+    return;
+  }
+
   if (carouselScrollRaf) return;
   carouselScrollRaf = requestAnimationFrame(() => {
     carouselScrollRaf = null;
@@ -216,7 +230,7 @@ function bindCarouselCardClicks() {
 }
 
 function initCarouselDrag() {
-  if (!carouselViewport || carouselViewport.dataset.dragBound) return;
+  if (!carouselViewport || carouselViewport.dataset.dragBound || isTouchCarousel) return;
   carouselViewport.dataset.dragBound = "true";
 
   const endDrag = (event) => {
@@ -266,7 +280,7 @@ function initCarouselDrag() {
 
 function scheduleCarouselScrollEnd() {
   clearTimeout(carouselScrollTimer);
-  carouselScrollTimer = setTimeout(onCarouselScrollEnd, 120);
+  carouselScrollTimer = setTimeout(onCarouselScrollEnd, isTouchCarousel ? 80 : 120);
 }
 
 function updateCarouselButtons() {
@@ -293,26 +307,28 @@ function initEbooksCarousel() {
       carouselViewport.addEventListener("scrollend", onCarouselScrollEnd, { passive: true });
     }
 
-    const onCarouselWheel = (e) => {
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-      e.preventDefault();
-      if (carouselWheelLock || carouselDrag) return;
+    if (!isTouchCarousel) {
+      const onCarouselWheel = (e) => {
+        if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+        e.preventDefault();
+        if (carouselWheelLock || carouselDrag) return;
 
-      carouselWheelAccum += e.deltaY;
-      if (Math.abs(carouselWheelAccum) < 36) return;
+        carouselWheelAccum += e.deltaY;
+        if (Math.abs(carouselWheelAccum) < 36) return;
 
-      const direction = carouselWheelAccum > 0 ? 1 : -1;
-      carouselWheelAccum = 0;
-      carouselWheelLock = true;
-      scrollCarouselToIndex(carouselActiveIndex + direction);
+        const direction = carouselWheelAccum > 0 ? 1 : -1;
+        carouselWheelAccum = 0;
+        carouselWheelLock = true;
+        scrollCarouselToIndex(carouselActiveIndex + direction);
 
-      setTimeout(() => {
-        carouselWheelLock = false;
-      }, 380);
-    };
+        setTimeout(() => {
+          carouselWheelLock = false;
+        }, 380);
+      };
 
-    carouselViewport.addEventListener("wheel", onCarouselWheel, { passive: false });
-    carouselWrap?.addEventListener("wheel", onCarouselWheel, { passive: false });
+      carouselViewport.addEventListener("wheel", onCarouselWheel, { passive: false });
+      carouselWrap?.addEventListener("wheel", onCarouselWheel, { passive: false });
+    }
 
     carouselViewport.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") {
