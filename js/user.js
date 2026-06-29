@@ -9,6 +9,9 @@ const UserStore = {
   _profile: null,
   _purchases: new Set(),
   _protectDownloads: false,
+  _stripePublishableKey: "",
+  _stripeMode: "test",
+  _stripePublishableKeyError: null,
 
   async init() {
     if (!this._initPromise) {
@@ -22,6 +25,13 @@ const UserStore = {
       const config = await ApiClient.fetchJson("/api/public-config");
       if (config.apiBase) ApiClient.setBase(config.apiBase);
       this._protectDownloads = Boolean(config.protectDownloads);
+      this._stripePublishableKey = config.stripePublishableKey || "";
+      this._stripeMode = config.stripeMode || "test";
+      this._stripePublishableKeyError = config.stripePublishableKeyError || null;
+
+      if (this._stripePublishableKey) {
+        console.log("[Stripe] mode =", this._stripeMode, "pk =", `${this._stripePublishableKey.slice(0, 12)}…`);
+      }
 
       if (config.useSupabase && config.supabaseUrl && config.supabaseAnonKey) {
         await this._loadSupabaseLib();
@@ -294,6 +304,42 @@ const UserStore = {
 
   usesSupabase() {
     return this._useSupabase;
+  },
+
+  getStripePublishableKey() {
+    return this._stripePublishableKey;
+  },
+
+  getStripeMode() {
+    return this._stripeMode;
+  },
+
+  getStripePublishableKeyError() {
+    return this._stripePublishableKeyError;
+  },
+
+  assertStripeReady() {
+    if (this._stripePublishableKeyError) {
+      throw new Error(this._stripePublishableKeyError);
+    }
+
+    const isProduction =
+      this._stripeMode === "live" ||
+      (!["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+        window.location.protocol === "https:");
+
+    if (isProduction) {
+      if (!this._stripePublishableKey) {
+        throw new Error(
+          "STRIPE_PUBLISHABLE_KEY manquante. Ajoutez pk_live_... dans Vercel → Production."
+        );
+      }
+      if (!this._stripePublishableKey.startsWith("pk_live_")) {
+        throw new Error(
+          "Clé publique Stripe live requise (pk_live_...). Une clé pk_test_ est configurée en production."
+        );
+      }
+    }
   },
 
   formatPrice(price) {

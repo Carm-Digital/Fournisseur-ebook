@@ -23,21 +23,75 @@ USE_SUPABASE = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
 FREE_EBOOK_IDS = {"livres", "papeteries", "plantes"}
 
 
-def validate_stripe_secret_key():
+def is_production_env(host=None):
+    mode = (os.getenv("STRIPE_MODE") or "").strip().lower()
+    if mode == "live":
+        return True
+    if mode == "test":
+        return False
+    if os.getenv("VERCEL_ENV") == "production":
+        return True
+    if os.getenv("NODE_ENV") == "production":
+        return True
+    if host and "localhost" not in host and "127.0.0.1" not in host:
+        return True
+    domain = (os.getenv("DOMAIN") or "").strip()
+    if domain and "localhost" not in domain and "127.0.0.1" not in domain:
+        return True
+    return False
+
+
+def validate_stripe_secret_key(host=None):
     key = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
-    if not key or key.startswith("sk_test_VOTRE"):
-        return None, "STRIPE_SECRET_KEY manquante. Ajoutez la clé secrète (sk_...) dans .env."
+    production = is_production_env(host)
+
+    if not key or key.startswith("sk_test_VOTRE") or key.startswith("sk_live_VOTRE"):
+        msg = (
+            "STRIPE_SECRET_KEY manquante. Ajoutez sk_live_... sur Vercel → Production."
+            if production
+            else "STRIPE_SECRET_KEY manquante. Ajoutez sk_test_... ou sk_live_... dans .env."
+        )
+        return None, msg
     if key.startswith("pk_"):
         return None, (
             "STRIPE_SECRET_KEY contient une clé publique (pk_). "
-            "Utilisez la clé secrète (sk_...) : Stripe Dashboard → Developers → API keys → Secret key."
+            "Utilisez sk_live_... ou sk_test_... (Secret key)."
         )
     if not key.startswith("sk_"):
         return None, "STRIPE_SECRET_KEY invalide : elle doit commencer par sk_."
+    if production and key.startswith("sk_test_"):
+        return None, (
+            "STRIPE_SECRET_KEY est en mode test (sk_test_) en production. "
+            "Remplacez par sk_live_... sur Vercel."
+        )
+    return key, None
+
+
+def validate_stripe_publishable_key(host=None):
+    key = (os.getenv("STRIPE_PUBLISHABLE_KEY") or "").strip()
+    production = is_production_env(host)
+
+    if not key or key.startswith("pk_test_VOTRE") or key.startswith("pk_live_VOTRE"):
+        if production:
+            return "", "STRIPE_PUBLISHABLE_KEY manquante. Ajoutez pk_live_... sur Vercel → Production."
+        return "", None
+    if key.startswith("sk_"):
+        return "", (
+            "STRIPE_PUBLISHABLE_KEY contient une clé secrète (sk_). "
+            "Utilisez pk_live_... ou pk_test_... (Publishable key)."
+        )
+    if not key.startswith("pk_"):
+        return "", "STRIPE_PUBLISHABLE_KEY invalide : elle doit commencer par pk_."
+    if production and key.startswith("pk_test_"):
+        return "", (
+            "STRIPE_PUBLISHABLE_KEY est en mode test (pk_test_) en production. "
+            "Remplacez par pk_live_... sur Vercel."
+        )
     return key, None
 
 
 STRIPE_SECRET_KEY, STRIPE_SECRET_KEY_ERROR = validate_stripe_secret_key()
+STRIPE_PUBLISHABLE_KEY, STRIPE_PUBLISHABLE_KEY_ERROR = validate_stripe_publishable_key()
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
 
@@ -153,22 +207,34 @@ def public_config():
     if "localhost" in api_base and "localhost" not in request.host:
         api_base = request_origin
 
+    _, pk_error = validate_stripe_publishable_key(request.host)
+    pk_key = (os.getenv("STRIPE_PUBLISHABLE_KEY") or "").strip()
+    if pk_error:
+        pk_key = ""
+
     return jsonify(
         useSupabase=USE_SUPABASE,
         supabaseUrl=SUPABASE_URL if USE_SUPABASE else "",
         supabaseAnonKey=SUPABASE_ANON_KEY if USE_SUPABASE else "",
         protectDownloads=PROTECT_DOWNLOADS,
         apiBase=api_base,
+        stripeMode="live" if is_production_env(request.host) else "test",
+        stripePublishableKey=pk_key if not pk_error else "",
+        stripePublishableKeyError=pk_error,
     )
 
 
 @app.get("/api/health")
 def health():
+    _, pk_error = validate_stripe_publishable_key(request.host)
+    _, sk_error = validate_stripe_secret_key(request.host)
     return jsonify(
         ok=True,
         supabase=USE_SUPABASE,
-        stripe=bool(STRIPE_SECRET_KEY and not STRIPE_SECRET_KEY_ERROR),
-        stripeKeyError=STRIPE_SECRET_KEY_ERROR,
+        stripe=bool(STRIPE_SECRET_KEY and not sk_error),
+        stripeMode="live" if is_production_env(request.host) else "test",
+        stripeKeyError=sk_error,
+        stripePublishableKeyError=pk_error,
     )
 
 
@@ -208,8 +274,9 @@ def download_ebook(ebook_id):
 
 @app.post("/api/create-checkout-session")
 def create_checkout_session():
-    if STRIPE_SECRET_KEY_ERROR:
-        return jsonify(error=STRIPE_SECRET_KEY_ERROR), 500
+    _, sk_error = validate_stripe_secret_key(request.host)
+    if sk_error:
+        return jsonify(error=sk_error), 500
 
     data = request.get_json(silent=True) or {}
     ebook_ids = data.get("ebookIds", [])
@@ -277,8 +344,9 @@ def stripe_webhook():
 
 @app.get("/api/verify-session")
 def verify_session():
-    if STRIPE_SECRET_KEY_ERROR:
-        return jsonify(ok=False, error=STRIPE_SECRET_KEY_ERROR), 500
+    _, sk_error = validate_stripe_secret_key(request.host)
+    if sk_error:
+        return jsonify(ok=False, error=sk_error), 500
 
     session_id = request.args.get("session_id", "").strip()
     if not session_id:

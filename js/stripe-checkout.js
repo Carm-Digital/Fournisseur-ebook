@@ -1,5 +1,10 @@
 async function startStripeCheckout(ebookIds, email, userId) {
+  await UserStore.init();
+  UserStore.assertStripeReady();
+
   const checkoutUrl = ApiClient.buildUrl("/api/create-checkout-session");
+  console.log("[Stripe] mode =", UserStore.getStripeMode());
+  console.log("[Stripe] pk =", UserStore.getStripePublishableKey()?.slice(0, 14) + "…");
   console.log("[Stripe] création session →", checkoutUrl, { ebookIds, email, userId });
 
   const data = await ApiClient.fetchJson("/api/create-checkout-session", {

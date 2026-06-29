@@ -1,12 +1,24 @@
 import { createCheckoutSession } from "../lib/stripe-checkout.js";
-import { STRIPE_SECRET_KEY_ERROR } from "../lib/config.js";
+import {
+  getStripePublishableKey,
+  getStripeSecretKey,
+  isProductionEnv,
+} from "../lib/config.js";
 import { methodNotAllowed, sendJson, withApi } from "../lib/http.js";
 
 async function handler(req, res) {
   if (req.method !== "POST") return methodNotAllowed(req, res);
 
-  if (STRIPE_SECRET_KEY_ERROR) {
-    return sendJson(req, res, 500, { error: STRIPE_SECRET_KEY_ERROR });
+  const { error: secretError } = getStripeSecretKey(req);
+  if (secretError) {
+    return sendJson(req, res, 500, { error: secretError });
+  }
+
+  if (isProductionEnv(req)) {
+    const { error: publishableError } = getStripePublishableKey(req);
+    if (publishableError) {
+      return sendJson(req, res, 500, { error: publishableError });
+    }
   }
 
   try {

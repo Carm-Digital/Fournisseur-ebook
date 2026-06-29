@@ -24,7 +24,7 @@ async function handler(req, res) {
     return sendJson(req, res, 500, { error: "Webhook non configuré" });
   }
 
-  const { key: stripeSecretKey, error: stripeKeyError } = getStripeSecretKey();
+  const { key: stripeSecretKey, error: stripeKeyError } = getStripeSecretKey(req);
   if (stripeKeyError) {
     return sendJson(req, res, 500, { error: stripeKeyError });
   }
