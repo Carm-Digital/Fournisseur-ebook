@@ -13,7 +13,7 @@ function injectCartLink() {
   if (!nav || nav.querySelector(".nav__cart")) return;
 
   const li = document.createElement("li");
-  li.innerHTML = `<a href="panier.html" class="nav__link nav__cart">Panier <span class="nav__cart-count" id="cart-count" hidden>0</span></a>`;
+  li.innerHTML = `<a href="panier.html" class="nav__link nav__cart"><i class="bi bi-cart3 nav__link-icon" aria-hidden="true"></i><span>Panier</span> <span class="nav__cart-count" id="cart-count" hidden>0</span></a>`;
   nav.appendChild(li);
   updateCartBadge();
 }

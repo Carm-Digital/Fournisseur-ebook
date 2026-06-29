@@ -142,21 +142,75 @@ body.page-site:not(.page-home) .landing-nav {
 
 .landing-nav__toggle {
   display: none;
-  flex-direction: column;
-  gap: 5px;
-  padding: 8px;
-  background: transparent;
-  border: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
   cursor: pointer;
+  position: relative;
+  z-index: 120;
+  transition: var(--transition);
 }
 
-.landing-nav__toggle span {
-  display: block;
-  width: 24px;
+.landing-nav__toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.landing-nav__toggle-bar {
+  position: absolute;
+  left: 50%;
+  width: 20px;
   height: 2px;
   background: #fff;
   border-radius: 2px;
-  transition: var(--transition);
+  transition: transform 0.25s ease, opacity 0.2s ease, top 0.25s ease;
+  transform: translateX(-50%);
+}
+
+.landing-nav__toggle-bar:nth-child(1) {
+  top: 15px;
+}
+
+.landing-nav__toggle-bar:nth-child(2) {
+  top: 21px;
+}
+
+.landing-nav__toggle-bar:nth-child(3) {
+  top: 27px;
+}
+
+.landing-nav__toggle.is-active .landing-nav__toggle-bar:nth-child(1) {
+  top: 21px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.landing-nav__toggle.is-active .landing-nav__toggle-bar:nth-child(2) {
+  opacity: 0;
+}
+
+.landing-nav__toggle.is-active .landing-nav__toggle-bar:nth-child(3) {
+  top: 21px;
+  transform: translateX(-50%) rotate(-45deg);
+}
+
+.landing-nav__backdrop {
+  display: none;
+}
+
+.landing-nav .nav__link-icon {
+  font-size: 1.05rem;
+  opacity: 0.92;
+  flex-shrink: 0;
+}
+
+.landing-nav .nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
 }
 
 .landing-nav .nav {
@@ -246,6 +300,16 @@ body.page-site:not(.page-home) .landing-nav {
 
 .nav__logout:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.nav__mobile-head,
+.nav__mobile-user,
+.nav__auth-divider {
+  display: none;
+}
+
+body.nav-open {
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
@@ -1129,29 +1193,182 @@ body.page-landing .cookie-banner {
 
 @media (max-width: 768px) {
   .landing-nav__toggle {
-    display: flex;
+    display: inline-flex;
+  }
+
+  .landing-nav__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 105;
+    background: rgba(15, 23, 42, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    backdrop-filter: blur(2px);
+  }
+
+  .landing-nav__backdrop.is-visible {
+    opacity: 1;
+    visibility: visible;
   }
 
   .landing-nav .nav {
     position: fixed;
     top: 0;
-    right: -100%;
-    width: min(300px, 85vw);
-    height: 100vh;
+    right: 0;
+    width: min(320px, 88vw);
+    height: 100dvh;
     flex-direction: column;
     align-items: stretch;
-    padding: 5rem 1.5rem 2rem;
-    background: var(--primary);
-    transition: right 0.3s ease;
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+    gap: 0.35rem;
+    padding: 1rem 1rem 1.5rem;
+    background: linear-gradient(180deg, #d42d14 0%, var(--primary) 28%, #c62812 100%);
+    transform: translateX(105%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.28);
+    z-index: 110;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .landing-nav .nav.is-open {
-    right: 0;
+    transform: translateX(0);
+  }
+
+  .nav__mobile-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0.25rem 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .nav__mobile-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+
+  .nav__mobile-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .nav__mobile-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .nav__mobile-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem 0.95rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .nav__mobile-user-icon {
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .nav__mobile-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .nav__mobile-user-info strong {
+    color: #fff;
+    font-size: 0.95rem;
+  }
+
+  .nav__mobile-user-info small {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nav__auth-item--user .nav__user-badge {
+    display: none;
+  }
+
+  .nav__user-badge--desktop {
+    display: none !important;
+  }
+
+  .nav__auth-divider {
+    display: block;
+    margin: 0.65rem 0 0.15rem;
+    padding: 0 0.35rem;
+  }
+
+  .nav__auth-divider span {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
   }
 
   .landing-nav .nav__link {
-    padding: 0.85rem 1rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid transparent;
+  }
+
+  .landing-nav .nav__link::after {
+    display: none;
+  }
+
+  .landing-nav .nav__link:hover,
+  .landing-nav .nav__link--active {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #fff;
+  }
+
+  .landing-nav .nav__cart {
+    margin-top: 0.35rem;
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.22);
+    font-weight: 600;
+  }
+
+  .landing-nav .nav__cart-count {
+    margin-left: auto;
+  }
+
+  .nav__auth-item--user {
+    width: 100%;
+  }
+
+  .landing-nav .nav__logout {
+    width: 100%;
+    text-align: left;
+    justify-content: flex-start;
   }
 
   .landing-stats__grid {

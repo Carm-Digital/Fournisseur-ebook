@@ -1,11 +1,11 @@
 const NAV_BASE = [
-  { href: "index.html", label: "Accueil", id: "home" },
-  { href: "ebook.html", label: "Ebooks", id: "ebook" },
+  { href: "index.html", label: "Accueil", id: "home", icon: "bi-house-door" },
+  { href: "ebook.html", label: "Ebooks", id: "ebook", icon: "bi-journal-bookmark" },
 ];
 
 const NAV_HOME_EXTRA = [
-  { href: "index.html#how-it-works", label: "Comment ça marche", id: "how" },
-  { href: "index.html#faq", label: "FAQ", id: "faq" },
+  { href: "index.html#how-it-works", label: "Comment ça marche", id: "how", icon: "bi-lightning" },
+  { href: "index.html#faq", label: "FAQ", id: "faq", icon: "bi-question-circle" },
 ];
 
 function getActivePage() {
@@ -27,6 +27,25 @@ function escapeHtml(text) {
     .replace(/"/g, "&quot;");
 }
 
+function renderNavLink(item, active) {
+  const isActive = item.id === active;
+  const icon = item.icon
+    ? `<i class="bi ${item.icon} nav__link-icon" aria-hidden="true"></i>`
+    : "";
+  return `<li><a href="${item.href}" class="nav__link${isActive ? " nav__link--active" : ""}">${icon}<span>${item.label}</span></a></li>`;
+}
+
+function getMobileNavHeadHtml() {
+  return `
+    <li class="nav__mobile-head">
+      <span class="nav__mobile-title">Menu</span>
+      <button type="button" class="nav__mobile-close" id="nav-close" aria-label="Fermer le menu">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </li>
+  `;
+}
+
 function getAuthNavHtml() {
   const active = getActivePage();
 
@@ -35,54 +54,80 @@ function getAuthNavHtml() {
     const firstName = escapeHtml((user?.name || "Utilisateur").split(" ")[0]);
     const email = escapeHtml(user?.email || "");
     return `
-      <li class="nav__auth-item">
-        <span class="nav__user-badge" title="${email}">
+      <li class="nav__auth-item nav__auth-item--user">
+        <div class="nav__mobile-user">
+          <span class="nav__mobile-user-icon" aria-hidden="true"><i class="bi bi-person-circle"></i></span>
+          <span class="nav__mobile-user-info">
+            <strong>${firstName}</strong>
+            <small>${email}</small>
+          </span>
+        </div>
+        <span class="nav__user-badge nav__user-badge--desktop" title="${email}">
           <i class="bi bi-person-check-fill"></i>
           Connecté · ${firstName}
         </span>
       </li>
       <li class="nav__auth-item">
-        <button type="button" class="nav__link nav__logout" id="nav-logout">Déconnexion</button>
+        <button type="button" class="nav__link nav__logout" id="nav-logout">
+          <i class="bi bi-box-arrow-right nav__link-icon" aria-hidden="true"></i>
+          <span>Déconnexion</span>
+        </button>
       </li>
     `;
   }
 
   const authItems = [
-    { href: "connexion.html", label: "Connexion", id: "connexion" },
-    { href: "inscription.html", label: "Inscription", id: "inscription" },
+    { href: "connexion.html", label: "Connexion", id: "connexion", icon: "bi-box-arrow-in-right" },
+    { href: "inscription.html", label: "Inscription", id: "inscription", icon: "bi-person-plus" },
   ];
 
-  return authItems
-    .map((item) => {
-      const isActive = item.id === active;
-      return `<li><a href="${item.href}" class="nav__link${isActive ? " nav__link--active" : ""}">${item.label}</a></li>`;
-    })
-    .join("");
+  return `
+    <li class="nav__auth-divider" aria-hidden="true"><span>Mon compte</span></li>
+    ${authItems.map((item) => renderNavLink(item, active)).join("")}
+  `;
 }
 
 function getNavLinksHtml() {
   const active = getActivePage();
 
   const staticLinks = getStaticNavItems()
-    .map((item) => {
-      const isActive = item.id === active;
-      return `<li><a href="${item.href}" class="nav__link${isActive ? " nav__link--active" : ""}">${item.label}</a></li>`;
-    })
+    .map((item) => renderNavLink(item, active))
     .join("");
 
-  return staticLinks + getAuthNavHtml();
+  return getMobileNavHeadHtml() + staticLinks + getAuthNavHtml();
+}
+
+function setNavOpen(open) {
+  const navMenu = document.getElementById("nav-menu");
+  const navToggle = document.getElementById("nav-toggle");
+  const backdrop = document.getElementById("nav-backdrop");
+
+  navMenu?.classList.toggle("is-open", open);
+  navToggle?.classList.toggle("is-active", open);
+  navToggle?.setAttribute("aria-expanded", open ? "true" : "false");
+  backdrop?.classList.toggle("is-visible", open);
+  backdrop?.setAttribute("aria-hidden", open ? "false" : "true");
+  document.body.classList.toggle("nav-open", open);
+}
+
+function closeNav() {
+  setNavOpen(false);
 }
 
 function bindNavLinkClose() {
   const navMenu = document.getElementById("nav-menu");
-  const navToggle = document.getElementById("nav-toggle");
 
-  navMenu?.querySelectorAll(".nav__link").forEach((link) => {
-    link.addEventListener("click", () => {
-      navMenu.classList.remove("is-open");
-      navToggle?.setAttribute("aria-expanded", "false");
-    });
+  navMenu?.querySelectorAll(".nav__link:not(.nav__logout)").forEach((link) => {
+    if (link.dataset.closeBound) return;
+    link.dataset.closeBound = "true";
+    link.addEventListener("click", closeNav);
   });
+
+  const logoutBtn = document.getElementById("nav-logout");
+  if (logoutBtn && !logoutBtn.dataset.closeBound) {
+    logoutBtn.dataset.closeBound = "true";
+    logoutBtn.addEventListener("click", closeNav);
+  }
 }
 
 function bindNavLogout() {
@@ -149,9 +194,12 @@ function renderNav() {
           aria-label="Les bons contacts"
         >Les bons contacts</span>
       </a>
-      <button class="landing-nav__toggle" type="button" aria-label="Menu" aria-expanded="false" id="nav-toggle">
-        <span></span><span></span><span></span>
+      <button class="landing-nav__toggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false" id="nav-toggle">
+        <span class="landing-nav__toggle-bar"></span>
+        <span class="landing-nav__toggle-bar"></span>
+        <span class="landing-nav__toggle-bar"></span>
       </button>
+      <div class="landing-nav__backdrop" id="nav-backdrop" aria-hidden="true"></div>
       <ul class="nav" id="nav-menu">${getNavLinksHtml()}</ul>
     </div>
   `;
@@ -284,11 +332,28 @@ function initNavBehavior() {
     nav?.classList.toggle("scrolled", window.scrollY > 60);
   }
 
-  navToggle?.addEventListener("click", () => {
-    const navMenu = document.getElementById("nav-menu");
-    const open = navMenu?.classList.toggle("is-open");
-    navToggle.setAttribute("aria-expanded", open ? "true" : "false");
-  });
+  if (!document.body.dataset.navBound) {
+    document.body.dataset.navBound = "true";
+
+    navToggle?.addEventListener("click", () => {
+      const open = !document.getElementById("nav-menu")?.classList.contains("is-open");
+      setNavOpen(open);
+    });
+
+    document.getElementById("nav-backdrop")?.addEventListener("click", closeNav);
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest("#nav-close")) {
+        closeNav();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeNav();
+      }
+    });
+  }
 
   bindNavLinkClose();
 }
