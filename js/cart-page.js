@@ -98,8 +98,10 @@ checkoutConfirmBtn?.addEventListener("click", async () => {
   checkoutConfirmBtn.textContent = "Redirection Stripe…";
 
   try {
+    await UserStore.init();
     await startStripeCheckout(ebookIds, user.email, UserStore.getUserId());
   } catch (error) {
+    console.error("[Stripe] erreur checkout", error);
     alert(error.message);
     checkoutConfirmBtn.disabled = false;
     checkoutConfirmBtn.textContent = "Payer avec Stripe";

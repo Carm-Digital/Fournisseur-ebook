@@ -1,12 +1,43 @@
 const ApiClient = {
   _base: null,
 
+  isLocalHost() {
+    return ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  },
+
+  sanitizeBase(url) {
+    if (!url) return window.location.origin;
+
+    const cleaned = String(url).replace(/\/$/, "");
+
+    if (
+      (cleaned.includes("localhost") || cleaned.includes("127.0.0.1")) &&
+      !this.isLocalHost()
+    ) {
+      console.warn(
+        "[ApiClient] apiBase localhost ignoré en production, utilisation de",
+        window.location.origin
+      );
+      return window.location.origin;
+    }
+
+    if (cleaned.startsWith("http://") && window.location.protocol === "https:") {
+      console.warn(
+        "[ApiClient] apiBase HTTP ignoré sur une page HTTPS, utilisation de",
+        window.location.origin
+      );
+      return window.location.origin;
+    }
+
+    return cleaned;
+  },
+
   getBase() {
-    if (this._base) return this._base;
+    if (this._base) return this.sanitizeBase(this._base);
 
     const meta = document.querySelector('meta[name="api-base"]')?.content?.trim();
     if (meta) {
-      this._base = meta.replace(/\/$/, "");
+      this._base = this.sanitizeBase(meta);
       return this._base;
     }
 
@@ -15,7 +46,9 @@ const ApiClient = {
   },
 
   setBase(url) {
-    if (url) this._base = String(url).replace(/\/$/, "");
+    if (!url) return;
+    this._base = this.sanitizeBase(url);
+    console.log("[ApiClient] apiBase =", this._base);
   },
 
   buildUrl(path) {
@@ -40,8 +73,7 @@ const ApiClient = {
 
     if (response.status === 404) {
       throw new Error(
-        `Route API introuvable (${response.url}). ` +
-          "Vérifiez que le backend Flask tourne (python server/app.py) ou que les fonctions /api sont déployées sur Vercel."
+        `Route API introuvable (${response.url}). Vérifiez le déploiement des routes /api sur Vercel.`
       );
     }
 
@@ -53,7 +85,27 @@ const ApiClient = {
   },
 
   async fetchJson(path, options = {}) {
-    const response = await fetch(this.buildUrl(path), options);
+    const url = this.buildUrl(path);
+    console.log("[ApiClient] fetch", options.method || "GET", url);
+
+    let response;
+
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+        },
+      });
+    } catch (error) {
+      console.error("[ApiClient] échec réseau", url, error);
+      throw new Error(
+        `Impossible de contacter l'API (${url}). ${error.message || "Failed to fetch"}`
+      );
+    }
+
+    console.log("[ApiClient] réponse", response.status, url);
+
     const { data } = await this.parseResponse(response);
 
     if (!response.ok) {

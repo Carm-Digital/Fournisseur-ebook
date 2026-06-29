@@ -130,12 +130,17 @@ def build_line_items(ebook_ids):
 
 @app.get("/api/public-config")
 def public_config():
+    request_origin = request.host_url.rstrip("/")
+    api_base = API_BASE
+    if "localhost" in api_base and "localhost" not in request.host:
+        api_base = request_origin
+
     return jsonify(
         useSupabase=USE_SUPABASE,
         supabaseUrl=SUPABASE_URL if USE_SUPABASE else "",
         supabaseAnonKey=SUPABASE_ANON_KEY if USE_SUPABASE else "",
         protectDownloads=PROTECT_DOWNLOADS,
-        apiBase=API_BASE,
+        apiBase=api_base,
     )
 
 

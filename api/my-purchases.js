@@ -1,8 +1,8 @@
 import { verifyAccessToken } from "../lib/supabase.js";
-import { methodNotAllowed, sendJson } from "../lib/http.js";
+import { methodNotAllowed, sendJson, withApi } from "../lib/http.js";
 
-export default async function handler(req, res) {
-  if (req.method !== "GET") return methodNotAllowed(res);
+async function handler(req, res) {
+  if (req.method !== "GET") return methodNotAllowed(req, res);
 
   const token = String(req.headers.authorization || "")
     .replace(/^Bearer\s+/i, "")
@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const user = await verifyAccessToken(token);
 
   if (!user) {
-    return sendJson(res, 401, { error: "Non authentifié" });
+    return sendJson(req, res, 401, { error: "Non authentifié" });
   }
 
   const client = (await import("../lib/supabase.js")).getSupabaseAdmin();
@@ -20,10 +20,12 @@ export default async function handler(req, res) {
     .eq("user_id", user.id);
 
   if (error) {
-    return sendJson(res, 500, { error: error.message });
+    return sendJson(req, res, 500, { error: error.message });
   }
 
-  return sendJson(res, 200, {
+  return sendJson(req, res, 200, {
     ebookIds: (data || []).map((row) => row.ebook_id),
   });
 }
+
+export default withApi(handler);

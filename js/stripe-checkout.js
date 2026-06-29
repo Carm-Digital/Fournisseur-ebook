@@ -1,4 +1,7 @@
 async function startStripeCheckout(ebookIds, email, userId) {
+  const checkoutUrl = ApiClient.buildUrl("/api/create-checkout-session");
+  console.log("[Stripe] création session →", checkoutUrl, { ebookIds, email, userId });
+
   const data = await ApiClient.fetchJson("/api/create-checkout-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -9,6 +12,7 @@ async function startStripeCheckout(ebookIds, email, userId) {
     throw new Error("Stripe n'a pas renvoyé d'URL de paiement.");
   }
 
+  console.log("[Stripe] redirection →", data.url);
   window.location.href = data.url;
 }
 

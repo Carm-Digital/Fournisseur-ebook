@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { recordPurchases } from "../lib/supabase.js";
 import { STRIPE_WEBHOOK_SECRET } from "../lib/config.js";
-import { methodNotAllowed, sendJson } from "../lib/http.js";
+import { methodNotAllowed, sendJson, withApi } from "../lib/http.js";
 
 export const config = {
   api: {
@@ -17,11 +17,11 @@ async function readRawBody(req) {
   return Buffer.concat(chunks);
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return methodNotAllowed(res);
+async function handler(req, res) {
+  if (req.method !== "POST") return methodNotAllowed(req, res);
 
   if (!STRIPE_WEBHOOK_SECRET) {
-    return sendJson(res, 500, { error: "Webhook non configuré" });
+    return sendJson(req, res, 500, { error: "Webhook non configuré" });
   }
 
   const payload = await readRawBody(req);
@@ -42,10 +42,11 @@ export default async function handler(req, res) {
       }
     }
 
-    return sendJson(res, 200, { received: true });
+    return sendJson(req, res, 200, { received: true });
   } catch (error) {
     const message = error.message || "Webhook invalide";
-    const status = message.includes("signature") ? 400 : 400;
-    return sendJson(res, status, { error: message });
+    return sendJson(req, res, 400, { error: message });
   }
 }
+
+export default withApi(handler);
