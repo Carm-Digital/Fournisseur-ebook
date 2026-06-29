@@ -16,13 +16,17 @@ function showLoggedInNotice() {
   const card = document.querySelector(".auth__card");
   if (!card) return;
 
+  const params = new URLSearchParams(window.location.search);
+  const returnUrl = params.get("from") || "ebook.html";
+  const safeReturn = returnUrl.includes("://") ? "ebook.html" : returnUrl;
+
   const firstName = escapeHtml(user.name.split(" ")[0]);
   const email = escapeHtml(user.email);
   card.innerHTML = `
     <h1 class="auth__title">Vous êtes connecté</h1>
     <p class="auth__subtitle">Bonjour <strong>${firstName}</strong>, vous êtes déjà connecté avec <strong>${email}</strong>.</p>
     <div class="auth__logged-actions">
-      <a href="ebook.html" class="auth__btn auth__btn--link">Voir les ebooks</a>
+      <a href="${escapeHtml(safeReturn)}" class="auth__btn auth__btn--link">Retour aux ebooks</a>
       <button type="button" class="auth__btn auth__btn--outline" id="auth-logout-btn">Se déconnecter</button>
     </div>
   `;
@@ -134,8 +138,17 @@ function hideError(el) {
   el.classList.remove("auth__notice");
 }
 
-UserStore.init().then(() => {
+UserStore.init().then(async () => {
   if (UserStore.isLoggedIn()) {
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get("from");
+
+    if (from && !from.includes("://")) {
+      await UserStore.refreshPurchases?.();
+      window.location.href = from;
+      return;
+    }
+
     showLoggedInNotice();
   }
   bindAuthForms();

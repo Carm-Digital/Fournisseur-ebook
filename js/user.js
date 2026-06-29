@@ -204,8 +204,20 @@ const UserStore = {
 
   async getAccessToken() {
     if (!this._useSupabase || !this._supabase) return null;
-    const { data } = await this._supabase.auth.getSession();
-    return data.session?.access_token || null;
+    await this.init();
+
+    const { data: sessionData } = await this._supabase.auth.getSession();
+    if (sessionData.session?.access_token) {
+      return sessionData.session.access_token;
+    }
+
+    const { data: refreshed, error } = await this._supabase.auth.refreshSession();
+    if (error || !refreshed.session?.access_token) {
+      return null;
+    }
+
+    await this._applySupabaseSession(refreshed.session);
+    return refreshed.session.access_token;
   },
 
   hasPurchased(ebookId) {
@@ -266,40 +278,66 @@ const UserStore = {
   },
 
   async downloadEbook(ebookId) {
+    await this.init();
+    await this.refreshPurchases();
+
     const url = this.getDownloadUrl(ebookId);
     if (!url) return false;
 
     const token = await this.getAccessToken();
     if (!token) {
-      window.location.href = `connexion.html?from=${encodeURIComponent(window.location.pathname)}`;
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      window.location.href = `connexion.html?from=${encodeURIComponent(returnTo)}`;
       return true;
     }
 
-    const response = await fetch(ApiClient.buildUrl(url), {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const response = await fetch(ApiClient.buildUrl(url), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (!response.ok) {
-      try {
-        const { data } = await ApiClient.parseResponse(response);
-        alert(data.error || "Téléchargement impossible.");
-      } catch (error) {
-        alert(error.message || "Téléchargement impossible.");
+      if (!response.ok) {
+        try {
+          const { data } = await ApiClient.parseResponse(response);
+          alert(data.error || "Téléchargement impossible.");
+        } catch (error) {
+          alert(error.message || "Téléchargement impossible.");
+        }
+        return true;
       }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get("Content-Disposition") || "";
+      const match = disposition.match(/filename="?([^"]+)"?/i);
+      const filename = match?.[1] || `${ebookId}.zip`;
+
+      if (navigator.canShare && navigator.share && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        try {
+          const file = new File([blob], filename, { type: "application/zip" });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: filename });
+            return true;
+          }
+        } catch (shareError) {
+          if (shareError?.name === "AbortError") return true;
+        }
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = filename;
+      link.target = "_blank";
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      return true;
+    } catch (error) {
+      alert(error.message || "Téléchargement impossible.");
       return true;
     }
-
-    const blob = await response.blob();
-    const disposition = response.headers.get("Content-Disposition") || "";
-    const match = disposition.match(/filename="?([^"]+)"?/i);
-    const filename = match?.[1] || `${ebookId}.zip`;
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = objectUrl;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(objectUrl);
-    return true;
   },
 
   usesSupabase() {
