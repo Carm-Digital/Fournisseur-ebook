@@ -34,6 +34,16 @@
   -webkit-transform: translate3d(0, 0, 0);
 }
 
+.focus-word--static-enter {
+  opacity: 1;
+  transform: translate3d(0, 8px, 0);
+  -webkit-transform: translate3d(0, 8px, 0);
+}
+
+.focus-container--static .focus-word {
+  will-change: transform;
+}
+
 .focus-word--dim {
   opacity: 0.55;
 }
@@ -92,6 +102,31 @@
 
 .landing-nav__brand .focus-container {
   vertical-align: middle;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.landing-nav__brand .focus-container--static .focus-word {
+  will-change: transform;
+}
+
+.landing-nav__brand .focus-container--static .focus-word--visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
+@media (max-width: 480px) {
+  .landing-nav__brand {
+    font-size: 1.05rem;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .landing-nav__brand-icon {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

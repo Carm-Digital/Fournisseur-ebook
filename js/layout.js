@@ -140,14 +140,13 @@ function renderNav() {
         >
         <span
           data-true-focus
+          data-no-cycle="true"
           data-sentence="Les bons contacts"
           data-border-color="#E8341A"
-          data-entrance-duration="0.4"
-          data-stagger-delay="0.08"
-          data-animation-duration="0.4"
-          data-pause-between="0.35"
+          data-entrance-duration="0.35"
+          data-stagger-delay="0.06"
           aria-label="Les bons contacts"
-        ></span>
+        >Les bons contacts</span>
       </a>
       <button class="landing-nav__toggle" type="button" aria-label="Menu" aria-expanded="false" id="nav-toggle">
         <span></span><span></span><span></span>

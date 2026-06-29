@@ -14,6 +14,7 @@ function initTrueFocus(container, options = {}) {
   const entranceDuration = Number(
     options.entranceDuration ?? container.dataset.entranceDuration ?? 0.4
   );
+  const noCycle = options.noCycle ?? container.dataset.noCycle === "true";
 
   const words = sentence.split(separator).filter(Boolean);
   if (!words.length) return;
@@ -27,11 +28,12 @@ function initTrueFocus(container, options = {}) {
 
   container.dataset.trueFocusInit = "true";
   container.classList.add("focus-container");
+  if (noCycle) container.classList.add("focus-container--static");
   container.innerHTML = "";
 
   words.forEach((word, index) => {
     const span = document.createElement("span");
-    span.className = "focus-word";
+    span.className = noCycle ? "focus-word focus-word--static-enter" : "focus-word";
     span.textContent = word;
     span.style.setProperty("--border-color", borderColor);
     span.style.setProperty("--glow-color", glowColor);
@@ -56,15 +58,18 @@ function initTrueFocus(container, options = {}) {
   frame.className = "focus-frame";
   frame.style.setProperty("--border-color", borderColor);
   frame.style.setProperty("--glow-color", glowColor);
-  frame.innerHTML = `
-    <span class="corner top-left"></span>
-    <span class="corner top-right"></span>
-    <span class="corner bottom-left"></span>
-    <span class="corner bottom-right"></span>
-  `;
-  container.appendChild(frame);
+  if (!noCycle) {
+    frame.innerHTML = `
+      <span class="corner top-left"></span>
+      <span class="corner top-right"></span>
+      <span class="corner bottom-left"></span>
+      <span class="corner bottom-right"></span>
+    `;
+    container.appendChild(frame);
+  }
 
   function updateHighlight() {
+    if (noCycle) return;
     wordEls.forEach((el, index) => {
       const isActive = index === currentIndex;
       el.classList.toggle("focus-word--active", isActive && cyclingStarted && !manualMode);
@@ -73,6 +78,7 @@ function initTrueFocus(container, options = {}) {
   }
 
   function updateFrame() {
+    if (noCycle) return;
     const activeEl = wordEls[currentIndex];
     if (!activeEl || !cyclingStarted) {
       frame.style.opacity = "0";
@@ -109,8 +115,15 @@ function initTrueFocus(container, options = {}) {
 
   function finishEntrance() {
     cyclingStarted = true;
-    goToIndex(0);
-    startAutoPlay();
+    wordEls.forEach((el) => {
+      el.classList.add("focus-word--visible");
+      el.classList.remove("focus-word--dim", "focus-word--active");
+      el.style.willChange = "auto";
+    });
+    if (!noCycle) {
+      goToIndex(0);
+      startAutoPlay();
+    }
   }
 
   function runEntrance() {
@@ -133,16 +146,21 @@ function initTrueFocus(container, options = {}) {
 
   runEntrance();
 
-  const resizeObserver = new ResizeObserver(() => updateFrame());
-  resizeObserver.observe(container);
-  wordEls.forEach((el) => resizeObserver.observe(el));
-  window.addEventListener("resize", updateFrame);
+  let resizeObserver = null;
+  if (!noCycle) {
+    resizeObserver = new ResizeObserver(() => updateFrame());
+    resizeObserver.observe(container);
+    wordEls.forEach((el) => resizeObserver.observe(el));
+    window.addEventListener("resize", updateFrame);
+  }
 
   return {
     destroy() {
       clearInterval(intervalId);
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", updateFrame);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+        window.removeEventListener("resize", updateFrame);
+      }
       container.dataset.trueFocusInit = "";
     },
     goToIndex,
